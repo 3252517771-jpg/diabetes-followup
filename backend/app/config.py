@@ -12,7 +12,14 @@ class Settings(BaseSettings):
     secret_key: str = Field(..., alias="SECRET_KEY")
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 1440
-    cors_origins: str = "http://localhost:5173,http://localhost:3000"
+    cors_origins: str = (
+        "http://localhost:5173,"
+        "http://127.0.0.1:5173,"
+        "http://localhost:3000,"
+        "http://127.0.0.1:3000,"
+        "http://localhost:4173,"
+        "http://127.0.0.1:4173"
+    )
     enable_ai_recommend: bool = True
     ai_api_key: str = ""
     ai_api_base_url: str = "https://api.deepseek.com"

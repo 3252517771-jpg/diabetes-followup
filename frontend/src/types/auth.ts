@@ -1,3 +1,5 @@
+import type { ApiResponse } from './common'
+
 export interface UserInfo {
   id: number
   username: string
@@ -13,8 +15,4 @@ export interface LoginResponse {
   user: UserInfo
 }
 
-export interface ApiResponse<T> {
-  code: number
-  message: string
-  data: T | null
-}
+export type { ApiResponse }

@@ -9,3 +9,10 @@ class ApiResponse(BaseModel, Generic[T]):
     code: int
     message: str
     data: T | None
+
+
+class PageData(BaseModel, Generic[T]):
+    items: list[T]
+    total: int
+    page: int
+    size: int

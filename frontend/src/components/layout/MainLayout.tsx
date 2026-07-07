@@ -1,7 +1,12 @@
-import { Layout, Menu, Typography, Button, Avatar, Space } from 'antd'
-import { DashboardOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons'
+import { Avatar, Button, Layout, Menu, Space, Typography } from 'antd'
+import {
+  DashboardOutlined,
+  LogoutOutlined,
+  TeamOutlined,
+  UserOutlined,
+} from '@ant-design/icons'
 import type { PropsWithChildren } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 import { ROUTE_PATHS } from '../../config/routes'
 import { useAuth } from '../../hooks/useAuth'
@@ -10,6 +15,7 @@ const { Header, Sider, Content } = Layout
 
 export function MainLayout({ children }: PropsWithChildren) {
   const navigate = useNavigate()
+  const location = useLocation()
   const { user, logout } = useAuth()
 
   function handleLogout() {
@@ -28,12 +34,25 @@ export function MainLayout({ children }: PropsWithChildren) {
         </div>
         <Menu
           mode="inline"
-          defaultSelectedKeys={['dashboard']}
+          selectedKeys={[location.pathname.startsWith('/patients') ? 'patients' : 'dashboard']}
+          onClick={({ key }) => {
+            if (key === 'dashboard') {
+              navigate(ROUTE_PATHS.dashboard)
+            }
+            if (key === 'patients') {
+              navigate(ROUTE_PATHS.patients)
+            }
+          }}
           items={[
             {
               key: 'dashboard',
               icon: <DashboardOutlined />,
               label: '工作台',
+            },
+            {
+              key: 'patients',
+              icon: <TeamOutlined />,
+              label: '患者管理',
             },
           ]}
         />
@@ -41,7 +60,7 @@ export function MainLayout({ children }: PropsWithChildren) {
       <Layout>
         <Header className="app-header">
           <Typography.Title level={5} className="page-title">
-            项目骨架 + 认证系统
+            糖尿病随访系统
           </Typography.Title>
           <Space size={12}>
             <div className="user-pill">

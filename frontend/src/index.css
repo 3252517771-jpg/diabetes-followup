@@ -132,3 +132,75 @@ body {
 .dashboard-intro {
   padding: 4px 0 8px;
 }
+
+.page-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.page-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.panel-card {
+  border-color: #e5e5e5;
+  border-radius: 12px;
+}
+
+.panel-title {
+  margin: 0 !important;
+}
+
+.panel-subtitle {
+  margin: 0 !important;
+  color: #525252;
+}
+
+.patient-filter-grid {
+  display: grid;
+  grid-template-columns: minmax(240px, 1.5fr) repeat(3, minmax(150px, 1fr)) auto;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.quick-tag-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.quick-tag-label {
+  color: #525252;
+  font-size: 13px;
+}
+
+.patient-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(240px, 1fr));
+  gap: 0 16px;
+}
+
+.patient-form-span-2 {
+  grid-column: 1 / -1;
+}
+
+.patient-form-actions {
+  margin-bottom: 0;
+}
+
+.patient-profile-card .ant-card-body {
+  height: 100%;
+}
+
+.patient-name {
+  margin-bottom: 0 !important;
+}
+
+.patient-detail-descriptions .ant-descriptions-item-label {
+  width: 88px;
+}
