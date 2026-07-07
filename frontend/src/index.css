@@ -1,0 +1,134 @@
+:root {
+  font-family:
+    Inter, "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #171717;
+  background: #f5f5f5;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.1), transparent 28%),
+    linear-gradient(180deg, #fafafa 0%, #f5f5f5 100%);
+}
+
+.fullscreen-center {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 32px 16px;
+}
+
+.auth-panel {
+  width: min(100%, 440px);
+}
+
+.login-card {
+  border-color: #e5e5e5;
+  border-radius: 12px;
+}
+
+.login-card__head {
+  margin-bottom: 24px;
+}
+
+.login-kicker,
+.dashboard-kicker,
+.brand-kicker {
+  display: inline-block;
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.login-title,
+.dashboard-title,
+.brand-title,
+.page-title {
+  margin: 8px 0 0 !important;
+}
+
+.login-subtitle,
+.dashboard-subtitle {
+  margin-top: 8px;
+  margin-bottom: 0 !important;
+  color: #525252;
+}
+
+.app-layout {
+  min-height: 100vh;
+}
+
+.app-sider {
+  border-right: 1px solid #e5e5e5;
+}
+
+.brand-block {
+  padding: 24px 20px 16px;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #e5e5e5;
+  padding: 0 24px !important;
+}
+
+.app-content {
+  padding: 24px;
+}
+
+.user-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  border: 1px solid #e5e5e5;
+  border-radius: 999px;
+  background: #fff;
+}
+
+.user-pill__name {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.user-pill__meta {
+  font-size: 12px;
+  color: #737373;
+}
+
+.dashboard-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.dashboard-intro {
+  padding: 4px 0 8px;
+}

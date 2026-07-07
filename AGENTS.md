@@ -19,6 +19,7 @@
 | 定时任务 | APScheduler（FastAPI 内嵌） |
 | 数据库 | 开发：SQLite（aiosqlite） / 生产：MySQL（aiomysql） |
 | 部署 | 阿里云 ECS + Nginx + Uvicorn（后续） |
+| Python 环境 | 必须使用 Anaconda 虚拟环境，禁止使用全局 Python |
 | 版本管理 | Git + GitHub（主仓）+ Gitee（国内镜像，后续部署用） |
 | 分支策略 | 平铺开发：每个里程碑基于 master 累计提交，不拉特性分支 |
 | 提交规范 | gitmoji + 中文/英文 组合标签，见原则6 |
@@ -98,6 +99,24 @@ ode_modules、*.db 等忽略文件
 **6.4 回滚**：
 - 提交顺序错误或漏提 → git reset --soft HEAD~1 修正后重新提交
 - 里程碑内容有误 → git revert <hash> 生成新的回滚 commit，不回退历史
+
+### 原则7：Python 必须走 Anaconda 虚拟环境
+
+本项目所有 Python 相关操作必须使用 Anaconda 虚拟环境，**禁止直接调用系统全局 `python`、`pip`**。
+
+- 默认优先使用：`D:\conda-envs\claude-code\python.exe`
+- 若该环境不可用，再与人工确认是否切换到其他 Conda 环境
+- 安装依赖必须使用：`D:\conda-envs\claude-code\python.exe -m pip install ...`
+- 启动后端、运行脚本、执行测试、跑 Alembic 迁移，都必须显式使用虚拟环境解释器
+- 禁止写 `pip install ...`、`python script.py` 这类依赖全局环境解析的命令
+
+常用命令示例：
+
+```powershell
+D:\conda-envs\claude-code\python.exe -m pip install -r backend\requirements.txt
+D:\conda-envs\claude-code\python.exe -m uvicorn app.main:app --reload
+D:\conda-envs\claude-code\python.exe -m pytest
+```
 
 ---
 

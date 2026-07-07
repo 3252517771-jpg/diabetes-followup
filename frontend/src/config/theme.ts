@@ -1,0 +1,71 @@
+import type { ThemeConfig } from 'antd'
+
+const themeConfig: ThemeConfig = {
+  token: {
+    colorBgBase: '#ffffff',
+    colorBgLayout: '#f5f5f5',
+    colorBgContainer: '#ffffff',
+    colorBorder: '#e5e5e5',
+    colorBorderSecondary: '#e5e5e5',
+    colorText: '#171717',
+    colorTextSecondary: '#525252',
+    colorTextTertiary: '#737373',
+    colorTextPlaceholder: '#a3a3a3',
+    colorPrimary: '#2563eb',
+    colorSuccess: '#16a34a',
+    colorWarning: '#ea580c',
+    colorError: '#dc2626',
+    colorInfo: '#2563eb',
+    colorLink: '#2563eb',
+    borderRadius: 6,
+    borderRadiusLG: 8,
+    borderRadiusOuter: 12,
+    borderRadiusXS: 4,
+    fontSize: 14,
+    fontSizeSM: 12,
+    fontSizeLG: 16,
+    controlHeight: 32,
+    controlHeightSM: 24,
+    controlHeightLG: 40,
+    padding: 16,
+    paddingSM: 12,
+    paddingXS: 8,
+    margin: 16,
+    marginSM: 12,
+    marginXS: 8,
+    lineWidth: 1,
+    lineWidthBold: 2,
+  },
+  components: {
+    Layout: {
+      siderBg: '#ffffff',
+      headerBg: '#ffffff',
+      bodyBg: '#f5f5f5',
+    },
+    Card: {
+      paddingLG: 16,
+      paddingSM: 12,
+      borderRadiusLG: 12,
+      boxShadow: 'none',
+      boxShadowTertiary: 'none',
+    },
+    Menu: {
+      itemBg: 'transparent',
+      itemSelectedBg: '#dbeafe',
+      itemColor: '#171717',
+      itemSelectedColor: '#2563eb',
+      itemHoverBg: '#f5f5f5',
+    },
+    Button: {
+      borderRadius: 8,
+      borderRadiusLG: 8,
+      primaryShadow: 'none',
+    },
+    Input: {
+      activeBorderColor: '#2563eb',
+      hoverBorderColor: '#171717',
+    },
+  },
+}
+
+export default themeConfig
