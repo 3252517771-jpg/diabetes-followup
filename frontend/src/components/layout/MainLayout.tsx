@@ -3,6 +3,7 @@ import {
   DashboardOutlined,
   LineChartOutlined,
   LogoutOutlined,
+  ScheduleOutlined,
   TeamOutlined,
   UserOutlined,
 } from '@ant-design/icons'
@@ -28,6 +29,8 @@ export function MainLayout({ children }: PropsWithChildren) {
     ? 'patients'
     : location.pathname.startsWith('/glucose')
       ? 'glucose'
+      : location.pathname.startsWith('/followup')
+        ? 'followup'
       : 'dashboard'
 
   return (
@@ -52,6 +55,9 @@ export function MainLayout({ children }: PropsWithChildren) {
             if (key === 'glucose') {
               navigate(ROUTE_PATHS.glucoseOverview)
             }
+            if (key === 'followup') {
+              navigate(ROUTE_PATHS.followupTemplates)
+            }
           }}
           items={[
             {
@@ -68,6 +74,11 @@ export function MainLayout({ children }: PropsWithChildren) {
               key: 'glucose',
               icon: <LineChartOutlined />,
               label: '血糖总览',
+            },
+            {
+              key: 'followup',
+              icon: <ScheduleOutlined />,
+              label: '随访计划',
             },
           ]}
         />

@@ -3,6 +3,7 @@ import { Button, Card, Col, Descriptions, Empty, Row, Space, Statistic, Tabs, Ta
 import { useNavigate, useParams } from 'react-router-dom'
 
 import { PatientGlucosePanel } from '../features/glucose/PatientGlucosePanel'
+import { FollowupPlanPanel } from '../features/followup/FollowupPlanPanel'
 import { PatientStatusTag } from '../features/patients/PatientStatusTag'
 import {
   getDiagnosisTypeLabel,
@@ -151,7 +152,7 @@ export function PatientDetailPage() {
                   {
                     key: 'followup',
                     label: '随访计划',
-                    children: <Empty description="M4 将接入随访计划执行信息" />,
+                    children: <FollowupPlanPanel patientId={patient.id} />,
                   },
                   {
                     key: 'diet',

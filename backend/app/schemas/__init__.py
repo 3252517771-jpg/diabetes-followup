@@ -1,5 +1,17 @@
 from app.schemas.auth import LoginRequest, RegisterRequest, TokenResponse, UserRead
 from app.schemas.common import ApiResponse, PageData
+from app.schemas.followup import (
+    FollowupPlanCreate,
+    FollowupPlanRead,
+    FollowupPlanUpdate,
+    FollowupStageCreate,
+    FollowupStageRead,
+    FollowupTemplateCreate,
+    FollowupTemplateRead,
+    FollowupTemplateUpdate,
+    StageTaskCreate,
+    StageTaskRead,
+)
 from app.schemas.glucose import (
     BloodGlucoseRecordCreate,
     BloodGlucoseRecordRead,
@@ -23,6 +35,14 @@ __all__ = [
     "ApiResponse",
     "BloodGlucoseRecordCreate",
     "BloodGlucoseRecordRead",
+    "FollowupPlanCreate",
+    "FollowupPlanRead",
+    "FollowupPlanUpdate",
+    "FollowupStageCreate",
+    "FollowupStageRead",
+    "FollowupTemplateCreate",
+    "FollowupTemplateRead",
+    "FollowupTemplateUpdate",
     "GlucoseOverview",
     "GlucoseStats",
     "GlucoseTrend",
@@ -38,6 +58,8 @@ __all__ = [
     "PatientTagUpdate",
     "PatientUpdate",
     "RegisterRequest",
+    "StageTaskCreate",
+    "StageTaskRead",
     "TokenResponse",
     "UserRead",
 ]

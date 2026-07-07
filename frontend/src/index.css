@@ -234,3 +234,128 @@ body {
   font-size: 13px;
   color: #525252;
 }
+
+.reactbits-title {
+  display: inline-block;
+  background: linear-gradient(90deg, #171717 0%, #2563eb 46%, #171717 92%);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: reactbits-title-sheen 5s ease-in-out infinite;
+}
+
+.reactbits-empty {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 180px;
+  overflow: hidden;
+}
+
+.reactbits-empty__pulse {
+  position: absolute;
+  width: 96px;
+  height: 96px;
+  border: 1px solid rgba(37, 99, 235, 0.24);
+  border-radius: 999px;
+  animation: reactbits-empty-pulse 2.8s ease-out infinite;
+}
+
+.followup-toolbar {
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.followup-filter-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.template-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.template-card {
+  border-color: #e5e5e5;
+  border-radius: 12px;
+}
+
+.template-card__title {
+  margin: 0 0 8px !important;
+}
+
+.template-card__desc {
+  min-height: 44px;
+  margin: 0 !important;
+  color: #525252;
+}
+
+.followup-template-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.followup-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(240px, 1fr));
+  gap: 0 16px;
+}
+
+.followup-form-span-2 {
+  grid-column: 1 / -1;
+}
+
+.followup-stage-grid {
+  display: grid;
+  grid-template-columns: 120px 1fr 140px 140px;
+  gap: 0 12px;
+}
+
+.followup-task-row {
+  display: grid;
+  grid-template-columns: 150px 130px 1fr 120px 1.2fr 36px;
+  gap: 8px;
+  align-items: start;
+}
+
+.followup-stage-meta {
+  margin: 4px 0 8px;
+  color: #737373;
+  font-size: 12px;
+}
+
+@keyframes reactbits-title-sheen {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes reactbits-empty-pulse {
+  0% {
+    opacity: 0.65;
+    transform: scale(0.74);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reactbits-title,
+  .reactbits-empty__pulse {
+    animation: none;
+  }
+}

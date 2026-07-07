@@ -6,4 +6,7 @@ export const ROUTE_PATHS = {
   patientDetail: '/patients/:id',
   patientEdit: '/patients/:id/edit',
   glucoseOverview: '/glucose',
+  followupTemplates: '/followup/templates',
+  followupTemplateCreate: '/followup/templates/create',
+  followupTemplateEdit: '/followup/templates/:id',
 } as const
