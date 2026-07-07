@@ -1,0 +1,31 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Node
+node_modules/
+dist/
+
+# 环境配置
+.env
+.env.local
+
+# 数据库文件
+*.db
+*.sqlite
+*.sqlite3
+
+# IDE
+.idea/
+.vscode/
+*.sublime-*
+
+# 系统
+.DS_Store
+Thumbs.db
+
+# 后端 ML 模型文件（如有）
+backend/app/ml_models/*.joblib
