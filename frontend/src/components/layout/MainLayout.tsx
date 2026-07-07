@@ -3,7 +3,10 @@ import {
   DashboardOutlined,
   LineChartOutlined,
   LogoutOutlined,
+  MessageOutlined,
+  NotificationOutlined,
   ScheduleOutlined,
+  SettingOutlined,
   TeamOutlined,
   UserOutlined,
 } from '@ant-design/icons'
@@ -19,6 +22,7 @@ export function MainLayout({ children }: PropsWithChildren) {
   const navigate = useNavigate()
   const location = useLocation()
   const { user, logout } = useAuth()
+  const isAdmin = user?.roles.includes('admin') ?? false
 
   function handleLogout() {
     logout()
@@ -31,7 +35,30 @@ export function MainLayout({ children }: PropsWithChildren) {
       ? 'glucose'
       : location.pathname.startsWith('/followup')
         ? 'followup'
-      : 'dashboard'
+        : location.pathname.startsWith('/diet')
+          ? 'diet'
+          : location.pathname.startsWith('/notifications')
+            ? 'notifications'
+            : location.pathname.startsWith('/system/users')
+              ? 'system-users'
+              : location.pathname.startsWith('/system/config')
+                ? 'system-config'
+                : 'dashboard'
+
+  const items = [
+    { key: 'dashboard', icon: <DashboardOutlined />, label: '工作台' },
+    { key: 'patients', icon: <TeamOutlined />, label: '患者管理' },
+    { key: 'glucose', icon: <LineChartOutlined />, label: '血糖总览' },
+    { key: 'followup', icon: <ScheduleOutlined />, label: '随访计划' },
+    { key: 'diet', icon: <NotificationOutlined />, label: '饮食推荐' },
+    { key: 'notifications', icon: <MessageOutlined />, label: '消息中心' },
+    ...(isAdmin
+      ? [
+          { key: 'system-users', icon: <UserOutlined />, label: '用户管理' },
+          { key: 'system-config', icon: <SettingOutlined />, label: '系统配置' },
+        ]
+      : []),
+  ]
 
   return (
     <Layout className="app-layout">
@@ -45,42 +72,17 @@ export function MainLayout({ children }: PropsWithChildren) {
         <Menu
           mode="inline"
           selectedKeys={[selectedKey]}
+          items={items}
           onClick={({ key }) => {
-            if (key === 'dashboard') {
-              navigate(ROUTE_PATHS.dashboard)
-            }
-            if (key === 'patients') {
-              navigate(ROUTE_PATHS.patients)
-            }
-            if (key === 'glucose') {
-              navigate(ROUTE_PATHS.glucoseOverview)
-            }
-            if (key === 'followup') {
-              navigate(ROUTE_PATHS.followupTemplates)
-            }
+            if (key === 'dashboard') navigate(ROUTE_PATHS.dashboard)
+            if (key === 'patients') navigate(ROUTE_PATHS.patients)
+            if (key === 'glucose') navigate(ROUTE_PATHS.glucoseOverview)
+            if (key === 'followup') navigate(ROUTE_PATHS.followupTemplates)
+            if (key === 'diet') navigate(ROUTE_PATHS.dietManage)
+            if (key === 'notifications') navigate(ROUTE_PATHS.notifications)
+            if (key === 'system-users') navigate(ROUTE_PATHS.systemUsers)
+            if (key === 'system-config') navigate(ROUTE_PATHS.systemConfig)
           }}
-          items={[
-            {
-              key: 'dashboard',
-              icon: <DashboardOutlined />,
-              label: '工作台',
-            },
-            {
-              key: 'patients',
-              icon: <TeamOutlined />,
-              label: '患者管理',
-            },
-            {
-              key: 'glucose',
-              icon: <LineChartOutlined />,
-              label: '血糖总览',
-            },
-            {
-              key: 'followup',
-              icon: <ScheduleOutlined />,
-              label: '随访计划',
-            },
-          ]}
         />
       </Sider>
       <Layout>

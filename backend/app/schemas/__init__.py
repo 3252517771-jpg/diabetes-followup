@@ -1,5 +1,20 @@
 from app.schemas.auth import LoginRequest, RegisterRequest, TokenResponse, UserRead
 from app.schemas.common import ApiResponse, PageData
+from app.schemas.dashboard import (
+    DashboardDistributionItem,
+    DashboardGlucoseTrend,
+    DashboardPatientOverview,
+    DashboardPendingItem,
+    DashboardStats,
+    DashboardTrendPoint,
+)
+from app.schemas.diet import (
+    DietMealPlan,
+    DietRecommendationContent,
+    DietRecommendationGenerateRequest,
+    DietRecommendationRead,
+    DietRecommendationReviewRequest,
+)
 from app.schemas.followup import (
     FollowupPlanCreate,
     FollowupPlanRead,
@@ -20,6 +35,8 @@ from app.schemas.glucose import (
     GlucoseTrend,
     GlucoseTrendPoint,
 )
+from app.schemas.h5 import H5AccessLinkRead, H5GlucoseCreate, H5PatientInfo, H5TaskItem
+from app.schemas.notification import NotificationRead, NotificationUnreadCount
 from app.schemas.patient import (
     PatientCreate,
     PatientDetail,
@@ -30,11 +47,29 @@ from app.schemas.patient import (
     PatientTagUpdate,
     PatientUpdate,
 )
+from app.schemas.system import (
+    SystemConfigRead,
+    SystemConfigUpdateItem,
+    SystemUserCreate,
+    SystemUserRead,
+    SystemUserUpdate,
+)
 
 __all__ = [
     "ApiResponse",
     "BloodGlucoseRecordCreate",
     "BloodGlucoseRecordRead",
+    "DashboardDistributionItem",
+    "DashboardGlucoseTrend",
+    "DashboardPatientOverview",
+    "DashboardPendingItem",
+    "DashboardStats",
+    "DashboardTrendPoint",
+    "DietMealPlan",
+    "DietRecommendationContent",
+    "DietRecommendationGenerateRequest",
+    "DietRecommendationRead",
+    "DietRecommendationReviewRequest",
     "FollowupPlanCreate",
     "FollowupPlanRead",
     "FollowupPlanUpdate",
@@ -47,7 +82,13 @@ __all__ = [
     "GlucoseStats",
     "GlucoseTrend",
     "GlucoseTrendPoint",
+    "H5AccessLinkRead",
+    "H5GlucoseCreate",
+    "H5PatientInfo",
+    "H5TaskItem",
     "LoginRequest",
+    "NotificationRead",
+    "NotificationUnreadCount",
     "PageData",
     "PatientCreate",
     "PatientDetail",
@@ -60,6 +101,11 @@ __all__ = [
     "RegisterRequest",
     "StageTaskCreate",
     "StageTaskRead",
+    "SystemConfigRead",
+    "SystemConfigUpdateItem",
+    "SystemUserCreate",
+    "SystemUserRead",
+    "SystemUserUpdate",
     "TokenResponse",
     "UserRead",
 ]

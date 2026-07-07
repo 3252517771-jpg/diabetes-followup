@@ -1,0 +1,57 @@
+from fastapi import APIRouter, Depends, Header, Query, status
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.database import get_db
+from app.schemas.common import ApiResponse
+from app.schemas.glucose import BloodGlucoseRecordRead
+from app.schemas.h5 import H5AccessLinkRead, H5GlucoseCreate, H5PatientInfo, H5TaskItem
+from app.services.h5_service import H5Service
+from app.utils.dependencies import get_current_user
+
+router = APIRouter(tags=["h5"])
+
+
+def get_h5_service(db: AsyncSession = Depends(get_db)) -> H5Service:
+    return H5Service(db)
+
+
+@router.get("/patients/{patient_id}/h5-access", response_model=ApiResponse[H5AccessLinkRead])
+async def create_h5_access_link(
+    patient_id: int,
+    _: object = Depends(get_current_user),
+    service: H5Service = Depends(get_h5_service),
+) -> ApiResponse[H5AccessLinkRead]:
+    return ApiResponse(code=200, message="ok", data=await service.create_access_link(patient_id))
+
+
+@router.get("/h5/api/patient/info", response_model=ApiResponse[H5PatientInfo])
+async def get_h5_patient_info(
+    token: str = Query(...),
+    service: H5Service = Depends(get_h5_service),
+) -> ApiResponse[H5PatientInfo]:
+    return ApiResponse(code=200, message="ok", data=await service.get_patient_info(token))
+
+
+@router.get("/h5/api/patient/tasks", response_model=ApiResponse[list[H5TaskItem]])
+async def get_h5_patient_tasks(
+    token: str = Query(...),
+    service: H5Service = Depends(get_h5_service),
+) -> ApiResponse[list[H5TaskItem]]:
+    return ApiResponse(code=200, message="ok", data=await service.get_tasks(token))
+
+
+@router.post("/h5/api/patient/glucose", response_model=ApiResponse[BloodGlucoseRecordRead], status_code=status.HTTP_201_CREATED)
+async def create_h5_glucose_record(
+    payload: H5GlucoseCreate,
+    x_h5_token: str = Header(..., alias="X-H5-Token"),
+    service: H5Service = Depends(get_h5_service),
+) -> ApiResponse[BloodGlucoseRecordRead]:
+    return ApiResponse(code=201, message="created", data=await service.create_glucose_record(x_h5_token, payload))
+
+
+@router.get("/h5/api/patient/notifications", response_model=ApiResponse[list[dict]])
+async def get_h5_notifications(
+    token: str = Query(...),
+    service: H5Service = Depends(get_h5_service),
+) -> ApiResponse[list[dict]]:
+    return ApiResponse(code=200, message="ok", data=await service.list_notifications(token))

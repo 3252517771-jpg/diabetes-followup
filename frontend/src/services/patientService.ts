@@ -3,6 +3,7 @@ import type { ApiResponse, PageData } from '../types/common'
 import type {
   PatientDetail,
   PatientFormValues,
+  PatientH5AccessLink,
   PatientListParams,
   PatientSummary,
   PatientTag,
@@ -15,6 +16,11 @@ export async function fetchPatients(params: PatientListParams) {
 
 export async function fetchPatientDetail(patientId: number) {
   const response = await request.get<ApiResponse<PatientDetail>>(`/patients/${patientId}`)
+  return response.data
+}
+
+export async function fetchPatientH5Access(patientId: number) {
+  const response = await request.get<ApiResponse<PatientH5AccessLink>>(`/patients/${patientId}/h5-access`)
   return response.data
 }
 

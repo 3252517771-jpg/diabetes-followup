@@ -41,6 +41,7 @@ class PatientBase(BaseModel):
     diagnosis_type: str | None = Field(default=None, max_length=20)
     severity: str | None = Field(default=None, max_length=10)
     status: str = Field(default="enrolled", max_length=20)
+    auto_push_enabled: bool = False
     notes: str | None = Field(default=None, max_length=2000)
     server_chan_key: str | None = Field(default=None, max_length=64)
 
@@ -71,6 +72,6 @@ class PatientListItem(BaseModel):
 
 
 class PatientDetail(PatientListItem):
+    auto_push_enabled: bool = False
     notes: str | None = None
     server_chan_key: str | None = None
-

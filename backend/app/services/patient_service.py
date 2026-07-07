@@ -86,6 +86,7 @@ class PatientService:
             severity=payload.severity,
             status=payload.status,
             responsible_doctor_id=doctor_id,
+            auto_push_enabled=payload.auto_push_enabled,
             notes=payload.notes,
             server_chan_key=payload.server_chan_key,
         )
@@ -112,6 +113,7 @@ class PatientService:
         patient.severity = payload.severity
         patient.status = payload.status
         patient.responsible_doctor_id = doctor_id
+        patient.auto_push_enabled = payload.auto_push_enabled
         patient.notes = payload.notes
         patient.server_chan_key = payload.server_chan_key
 
@@ -262,6 +264,7 @@ class PatientService:
         summary = items[0]
         return PatientDetail(
             **summary.model_dump(),
+            auto_push_enabled=patient.auto_push_enabled,
             notes=patient.notes,
             server_chan_key=patient.server_chan_key,
         )

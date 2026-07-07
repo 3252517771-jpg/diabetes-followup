@@ -26,8 +26,16 @@ export interface PatientSummary {
 }
 
 export interface PatientDetail extends PatientSummary {
+  auto_push_enabled: boolean
   notes: string | null
   server_chan_key: string | null
+}
+
+export interface PatientH5AccessLink {
+  patient_id: number
+  access_token: string
+  access_url: string
+  expires_in_minutes: number
 }
 
 export interface PatientListParams {
@@ -48,6 +56,7 @@ export interface PatientFormValues {
   diagnosis_type: string | null
   severity: string | null
   status: string
+  auto_push_enabled: boolean
   notes: string | null
   server_chan_key: string | null
   tag_ids: number[]

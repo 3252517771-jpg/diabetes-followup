@@ -8,12 +8,16 @@ import { useAuth } from '../hooks/useAuth'
 import { MainLayout } from '../components/layout/MainLayout'
 import { AuthProvider } from '../store/AuthContext'
 import { DashboardPage } from '../pages/DashboardPage'
+import { DietManagePage } from '../pages/DietManagePage'
 import { FollowupTemplatesPage } from '../pages/FollowupTemplatesPage'
 import { GlucoseOverviewPage } from '../pages/GlucoseOverviewPage'
 import { LoginPage } from '../pages/LoginPage'
+import { NotificationPage } from '../pages/NotificationPage'
 import { PatientDetailPage } from '../pages/PatientDetailPage'
 import { PatientFormPage } from '../pages/PatientFormPage'
 import { PatientListPage } from '../pages/PatientListPage'
+import { SystemConfigPage } from '../pages/SystemConfigPage'
+import { SystemUsersPage } from '../pages/SystemUsersPage'
 import { TemplateEditorPage } from '../pages/TemplateEditorPage'
 
 const queryClient = new QueryClient()
@@ -56,9 +60,13 @@ function RouterContent() {
         <Route path={ROUTE_PATHS.patientDetail} element={<PatientDetailPage />} />
         <Route path={ROUTE_PATHS.patientEdit} element={<PatientFormPage />} />
         <Route path={ROUTE_PATHS.glucoseOverview} element={<GlucoseOverviewPage />} />
+        <Route path={ROUTE_PATHS.dietManage} element={<DietManagePage />} />
+        <Route path={ROUTE_PATHS.notifications} element={<NotificationPage />} />
         <Route path={ROUTE_PATHS.followupTemplates} element={<FollowupTemplatesPage />} />
         <Route path={ROUTE_PATHS.followupTemplateCreate} element={<TemplateEditorPage />} />
         <Route path={ROUTE_PATHS.followupTemplateEdit} element={<TemplateEditorPage />} />
+        <Route path={ROUTE_PATHS.systemUsers} element={<SystemUsersPage />} />
+        <Route path={ROUTE_PATHS.systemConfig} element={<SystemConfigPage />} />
       </Route>
     </Routes>
   )

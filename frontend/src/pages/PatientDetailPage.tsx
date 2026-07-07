@@ -1,31 +1,62 @@
-import { useQuery } from '@tanstack/react-query'
-import { Button, Card, Col, Descriptions, Empty, Row, Space, Statistic, Tabs, Tag, Typography } from 'antd'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import {
+  App,
+  Button,
+  Card,
+  Col,
+  Descriptions,
+  Empty,
+  Row,
+  Space,
+  Statistic,
+  Tabs,
+  Tag,
+  Typography,
+} from 'antd'
 import { useNavigate, useParams } from 'react-router-dom'
 
-import { PatientGlucosePanel } from '../features/glucose/PatientGlucosePanel'
+import { PatientDietPanel } from '../features/diet/PatientDietPanel'
 import { FollowupPlanPanel } from '../features/followup/FollowupPlanPanel'
+import { PatientGlucosePanel } from '../features/glucose/PatientGlucosePanel'
 import { PatientStatusTag } from '../features/patients/PatientStatusTag'
 import {
   getDiagnosisTypeLabel,
   getGenderLabel,
   getSeverityLabel,
 } from '../features/patients/patientOptions'
-import { fetchPatientDetail } from '../services/patientService'
+import { fetchPatientDetail, fetchPatientH5Access } from '../services/patientService'
 
 export function PatientDetailPage() {
   const navigate = useNavigate()
+  const { message } = App.useApp()
   const { id } = useParams()
   const patientId = Number(id)
 
   const detailQuery = useQuery({
     queryKey: ['patient-detail', id],
-    enabled: Boolean(id),
+    enabled: Number.isFinite(patientId),
     queryFn: async () => {
       const response = await fetchPatientDetail(patientId)
       if (!response.data) {
         throw new Error(response.message || '患者详情加载失败')
       }
       return response.data
+    },
+  })
+
+  const h5AccessMutation = useMutation({
+    mutationFn: () => fetchPatientH5Access(patientId),
+    onSuccess: async (response) => {
+      if (!response.data) {
+        message.error(response.message || '获取 H5 入口失败')
+        return
+      }
+      await navigator.clipboard.writeText(response.data.access_url)
+      window.open(response.data.access_url, '_blank', 'noopener,noreferrer')
+      message.success('已复制并打开患者 H5 入口')
+    },
+    onError: (error) => {
+      message.error(error instanceof Error ? error.message : '获取 H5 入口失败')
     },
   })
 
@@ -51,7 +82,7 @@ export function PatientDetailPage() {
           {patient.name}
         </Typography.Title>
         <Typography.Paragraph className="panel-subtitle">
-          患者档案、标签、血糖监测和后续随访模块均从真实接口读取。
+          患者档案、血糖、随访与饮食推荐均来自真实 FastAPI 接口。
         </Typography.Paragraph>
       </div>
 
@@ -64,7 +95,7 @@ export function PatientDetailPage() {
                   {patient.name}
                 </Typography.Title>
                 <Typography.Text type="secondary">
-                  {getGenderLabel(patient.gender)} · {patient.age ?? '--'} 岁
+                  {getGenderLabel(patient.gender)} / {patient.age ?? '--'} 岁
                 </Typography.Text>
               </div>
 
@@ -94,9 +125,14 @@ export function PatientDetailPage() {
                 <Descriptions.Item label="备注">{patient.notes ?? '暂无备注'}</Descriptions.Item>
               </Descriptions>
 
-              <Button type="primary" onClick={() => navigate(`/patients/${patient.id}/edit`)}>
-                编辑患者
-              </Button>
+              <Space direction="vertical" style={{ width: '100%' }}>
+                <Button type="primary" onClick={() => navigate(`/patients/${patient.id}/edit`)}>
+                  编辑患者
+                </Button>
+                <Button loading={h5AccessMutation.isPending} onClick={() => h5AccessMutation.mutate()}>
+                  打开患者 H5 入口
+                </Button>
+              </Space>
             </Space>
           </Card>
         </Col>
@@ -135,7 +171,7 @@ export function PatientDetailPage() {
                         </Descriptions.Item>
                         <Descriptions.Item label="年龄">{patient.age ?? '--'}</Descriptions.Item>
                         <Descriptions.Item label="手机号">{patient.phone ?? '--'}</Descriptions.Item>
-                        <Descriptions.Item label="诊断类型">
+                        <Descriptions.Item label="糖尿病类型">
                           {getDiagnosisTypeLabel(patient.diagnosis_type)}
                         </Descriptions.Item>
                         <Descriptions.Item label="严重程度">
@@ -156,8 +192,8 @@ export function PatientDetailPage() {
                   },
                   {
                     key: 'diet',
-                    label: '饮食',
-                    children: <Empty description="M5 将接入饮食推荐与记录" />,
+                    label: '饮食推荐',
+                    children: <PatientDietPanel patientId={patient.id} />,
                   },
                 ]}
               />
