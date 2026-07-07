@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Button, Card, Col, Descriptions, Empty, Row, Space, Statistic, Tabs, Tag, Typography } from 'antd'
 import { useNavigate, useParams } from 'react-router-dom'
 
+import { PatientGlucosePanel } from '../features/glucose/PatientGlucosePanel'
 import { PatientStatusTag } from '../features/patients/PatientStatusTag'
 import {
   getDiagnosisTypeLabel,
@@ -13,14 +14,15 @@ import { fetchPatientDetail } from '../services/patientService'
 export function PatientDetailPage() {
   const navigate = useNavigate()
   const { id } = useParams()
+  const patientId = Number(id)
 
   const detailQuery = useQuery({
     queryKey: ['patient-detail', id],
     enabled: Boolean(id),
     queryFn: async () => {
-      const response = await fetchPatientDetail(Number(id))
+      const response = await fetchPatientDetail(patientId)
       if (!response.data) {
-        throw new Error(response.message || '加载患者详情失败')
+        throw new Error(response.message || '患者详情加载失败')
       }
       return response.data
     },
@@ -48,7 +50,7 @@ export function PatientDetailPage() {
           {patient.name}
         </Typography.Title>
         <Typography.Paragraph className="panel-subtitle">
-          患者档案、标签和后续模块预留都从真实接口读取。
+          患者档案、标签、血糖监测和后续随访模块均从真实接口读取。
         </Typography.Paragraph>
       </div>
 
@@ -144,7 +146,7 @@ export function PatientDetailPage() {
                   {
                     key: 'glucose',
                     label: '血糖',
-                    children: <Empty description="M3 将接入患者血糖趋势和记录表" />,
+                    children: <PatientGlucosePanel patientId={patient.id} />,
                   },
                   {
                     key: 'followup',

@@ -5,4 +5,5 @@ export const ROUTE_PATHS = {
   patientCreate: '/patients/create',
   patientDetail: '/patients/:id',
   patientEdit: '/patients/:id/edit',
+  glucoseOverview: '/glucose',
 } as const

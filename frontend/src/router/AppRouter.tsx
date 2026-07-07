@@ -8,6 +8,7 @@ import { useAuth } from '../hooks/useAuth'
 import { MainLayout } from '../components/layout/MainLayout'
 import { AuthProvider } from '../store/AuthContext'
 import { DashboardPage } from '../pages/DashboardPage'
+import { GlucoseOverviewPage } from '../pages/GlucoseOverviewPage'
 import { LoginPage } from '../pages/LoginPage'
 import { PatientDetailPage } from '../pages/PatientDetailPage'
 import { PatientFormPage } from '../pages/PatientFormPage'
@@ -52,6 +53,7 @@ function RouterContent() {
         <Route path={ROUTE_PATHS.patientCreate} element={<PatientFormPage />} />
         <Route path={ROUTE_PATHS.patientDetail} element={<PatientDetailPage />} />
         <Route path={ROUTE_PATHS.patientEdit} element={<PatientFormPage />} />
+        <Route path={ROUTE_PATHS.glucoseOverview} element={<GlucoseOverviewPage />} />
       </Route>
     </Routes>
   )

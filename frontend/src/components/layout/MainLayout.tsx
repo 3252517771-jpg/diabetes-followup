@@ -1,6 +1,7 @@
 import { Avatar, Button, Layout, Menu, Space, Typography } from 'antd'
 import {
   DashboardOutlined,
+  LineChartOutlined,
   LogoutOutlined,
   TeamOutlined,
   UserOutlined,
@@ -23,6 +24,12 @@ export function MainLayout({ children }: PropsWithChildren) {
     navigate(ROUTE_PATHS.login)
   }
 
+  const selectedKey = location.pathname.startsWith('/patients')
+    ? 'patients'
+    : location.pathname.startsWith('/glucose')
+      ? 'glucose'
+      : 'dashboard'
+
   return (
     <Layout className="app-layout">
       <Sider width={228} className="app-sider" theme="light">
@@ -34,13 +41,16 @@ export function MainLayout({ children }: PropsWithChildren) {
         </div>
         <Menu
           mode="inline"
-          selectedKeys={[location.pathname.startsWith('/patients') ? 'patients' : 'dashboard']}
+          selectedKeys={[selectedKey]}
           onClick={({ key }) => {
             if (key === 'dashboard') {
               navigate(ROUTE_PATHS.dashboard)
             }
             if (key === 'patients') {
               navigate(ROUTE_PATHS.patients)
+            }
+            if (key === 'glucose') {
+              navigate(ROUTE_PATHS.glucoseOverview)
             }
           }}
           items={[
@@ -53,6 +63,11 @@ export function MainLayout({ children }: PropsWithChildren) {
               key: 'patients',
               icon: <TeamOutlined />,
               label: '患者管理',
+            },
+            {
+              key: 'glucose',
+              icon: <LineChartOutlined />,
+              label: '血糖总览',
             },
           ]}
         />

@@ -9,6 +9,7 @@ from app.database import AsyncSessionLocal, engine
 from app.middlewares.error_handler import register_exception_handlers
 from app.models.user import Role, User, UserRole
 from app.routers.auth import router as auth_router
+from app.routers.glucose import router as glucose_router
 from app.routers.patients import router as patients_router
 from app.utils.security import get_password_hash
 
@@ -63,6 +64,7 @@ app.add_middleware(
 register_exception_handlers(app)
 app.include_router(auth_router, prefix=settings.api_prefix)
 app.include_router(patients_router, prefix=settings.api_prefix)
+app.include_router(glucose_router, prefix=settings.api_prefix)
 
 
 @app.get("/health")
