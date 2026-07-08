@@ -552,6 +552,21 @@ body {
   min-height: 390px;
 }
 
+.magic-bento-card--glucose-primary {
+  grid-column: span 7;
+  min-height: 420px;
+}
+
+.magic-bento-card--glucose-secondary {
+  grid-column: span 5;
+  min-height: 420px;
+}
+
+.magic-bento-card--full {
+  grid-column: span 12;
+  min-height: auto;
+}
+
 .magic-bento-card__header {
   display: flex;
   align-items: flex-start;
@@ -693,6 +708,62 @@ body {
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
+}
+
+.glucose-main-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(220px, 0.95fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+.glucose-main-layout__chart,
+.glucose-main-layout__aside {
+  min-width: 0;
+}
+
+.glucose-summary-panel,
+.glucose-distribution-list {
+  display: grid;
+  gap: 12px;
+}
+
+.glucose-summary-panel__item,
+.glucose-distribution-item {
+  padding: 14px 16px;
+  border: 1px solid rgba(228, 228, 231, 0.92);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.glucose-summary-panel__item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.glucose-summary-panel__label {
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.glucose-summary-panel__value {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.glucose-summary-panel__hint {
+  color: #8a8a8a;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.glucose-distribution-item--soft {
+  background: rgba(250, 250, 250, 0.9);
+}
+
+.glucose-record-table {
+  opacity: 0.94;
 }
 
 .glucose-chart {
@@ -930,13 +1001,17 @@ body {
   .magic-bento-card--primary,
   .magic-bento-card--summary,
   .magic-bento-card--secondary,
-  .magic-bento-card--tertiary {
+  .magic-bento-card--tertiary,
+  .magic-bento-card--glucose-primary,
+  .magic-bento-card--glucose-secondary,
+  .magic-bento-card--full {
     grid-column: span 1;
     min-height: auto;
   }
 
   .dashboard-summary-metrics,
-  .dashboard-secondary-layout {
+  .dashboard-secondary-layout,
+  .glucose-main-layout {
     grid-template-columns: 1fr;
   }
 
