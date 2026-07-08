@@ -1,5 +1,18 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000/api'
 
+interface ApiEnvelope<T> {
+  code: number
+  message: string
+  data: T | null
+}
+
+interface ErrorEnvelope {
+  code?: number
+  message?: string
+  detail?: string
+  data?: null
+}
+
 export async function request<T>(path: string, options?: RequestInit) {
   let response: Response
 
@@ -10,19 +23,20 @@ export async function request<T>(path: string, options?: RequestInit) {
   }
 
   const rawText = await response.text()
-  let payload: { code: number; message: string; data: T | null }
+  let payload: ApiEnvelope<T> | ErrorEnvelope
 
   try {
     payload = rawText
-      ? (JSON.parse(rawText) as { code: number; message: string; data: T | null })
+      ? (JSON.parse(rawText) as ApiEnvelope<T> | ErrorEnvelope)
       : { code: response.status, message: '', data: null }
   } catch {
     throw new Error('服务响应格式异常，请稍后重试')
   }
 
   if (!response.ok) {
-    throw new Error(payload.message || `请求失败 (${response.status})`)
+    const detail = 'detail' in payload ? payload.detail : undefined
+    throw new Error(payload.message || detail || `请求失败 (${response.status})`)
   }
 
-  return payload
+  return payload as ApiEnvelope<T>
 }

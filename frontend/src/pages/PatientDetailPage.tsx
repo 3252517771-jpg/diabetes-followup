@@ -18,7 +18,10 @@ import { QueryStateAlert } from '../components/QueryStateAlert'
 import { ScrollStack, ScrollStackItem } from '../components/reactbits/ScrollStack'
 import { PatientDietPanel } from '../features/diet/PatientDietPanel'
 import { FollowupPlanPanel } from '../features/followup/FollowupPlanPanel'
-import { PatientGlucosePanel } from '../features/glucose/PatientGlucosePanel'
+import { PatientGlucoseRecordsSection } from '../features/glucose/PatientGlucoseRecordsSection'
+import { PatientGlucoseSummarySection } from '../features/glucose/PatientGlucoseSummarySection'
+import { PatientGlucoseTrendSection } from '../features/glucose/PatientGlucoseTrendSection'
+import { usePatientGlucoseData } from '../features/glucose/usePatientGlucoseData'
 import { PatientStatusTag } from '../features/patients/PatientStatusTag'
 import {
   getDiagnosisTypeLabel,
@@ -30,7 +33,7 @@ import { fetchPatientDetail, fetchPatientH5Access } from '../services/patientSer
 function getPatientAvatarText(name: string) {
   const compactName = name.trim()
   if (!compactName) {
-    return '患'
+    return '患者'
   }
 
   if (/[\u4e00-\u9fa5]/.test(compactName)) {
@@ -61,6 +64,12 @@ export function PatientDetailPage() {
       }
       return response.data
     },
+  })
+
+  const glucoseTrendData = usePatientGlucoseData({
+    patientId,
+    days: 14,
+    statsDays: 30,
   })
 
   const h5AccessMutation = useMutation({
@@ -200,61 +209,63 @@ export function PatientDetailPage() {
         </Card>
 
         <div className="patient-detail-sections-viewport">
-          <ScrollStack className="patient-detail-sections">
+          <ScrollStack className="patient-detail-sections" stagePadding={160} overlapOffset={84}>
             <ScrollStackItem index={0}>
-              <div className="patient-stack-stage">
-                <Card className="panel-card patient-section-card patient-section-card--followup">
-                  <div className="patient-section-card__header">
-                    <div>
-                      <Typography.Text className="dashboard-kicker">Followup</Typography.Text>
-                      <Typography.Title level={3} className="panel-title">
-                        随访计划
-                      </Typography.Title>
-                      <Typography.Paragraph className="panel-subtitle">
-                        先看计划与执行节奏，再进入血糖与饮食判断。
-                      </Typography.Paragraph>
-                    </div>
-                  </div>
-                  <FollowupPlanPanel patientId={patient.id} />
-                </Card>
+              <div className="patient-stack-stage patient-stack-stage--followup">
+                <FollowupPlanPanel patientId={patient.id} />
               </div>
             </ScrollStackItem>
 
             <ScrollStackItem index={1}>
-              <div className="patient-stack-stage">
-                <Card className="panel-card patient-section-card patient-section-card--glucose">
-                  <div className="patient-section-card__header">
-                    <div>
-                      <Typography.Text className="dashboard-kicker">Glucose</Typography.Text>
-                      <Typography.Title level={3} className="panel-title">
-                        血糖监测
-                      </Typography.Title>
-                      <Typography.Paragraph className="panel-subtitle">
-                        该区块承担主要摘要职责，优先用于趋势判断与异常识别。
-                      </Typography.Paragraph>
-                    </div>
-                  </div>
-                  <PatientGlucosePanel patientId={patient.id} />
-                </Card>
+              <div className="patient-stack-stage patient-stack-stage--glucose-trend">
+                {glucoseTrendData.trendQuery.isError || glucoseTrendData.statsQuery.isError ? (
+                  <QueryStateAlert
+                    title="血糖趋势加载失败"
+                    description={
+                      glucoseTrendData.trendQuery.error?.message ??
+                      glucoseTrendData.statsQuery.error?.message ??
+                      '请稍后重试'
+                    }
+                    onRetry={() => {
+                      void glucoseTrendData.trendQuery.refetch()
+                      void glucoseTrendData.statsQuery.refetch()
+                    }}
+                  />
+                ) : (
+                  <PatientGlucoseTrendSection
+                    loading={
+                      glucoseTrendData.trendQuery.isLoading || glucoseTrendData.statsQuery.isLoading
+                    }
+                    trend={glucoseTrendData.trendQuery.data}
+                    stats={glucoseTrendData.statsQuery.data}
+                  />
+                )}
               </div>
             </ScrollStackItem>
 
             <ScrollStackItem index={2}>
-              <div className="patient-stack-stage">
-                <Card className="panel-card patient-section-card patient-section-card--diet">
-                  <div className="patient-section-card__header">
-                    <div>
-                      <Typography.Text className="dashboard-kicker">Diet</Typography.Text>
-                      <Typography.Title level={3} className="panel-title">
-                        饮食推荐
-                      </Typography.Title>
-                      <Typography.Paragraph className="panel-subtitle">
-                        查看近期推荐、审核结果与推送状态，作为辅助决策补充。
-                      </Typography.Paragraph>
-                    </div>
-                  </div>
-                  <PatientDietPanel patientId={patient.id} />
-                </Card>
+              <div className="patient-stack-stage patient-stack-stage--glucose-summary">
+                {glucoseTrendData.statsQuery.isError ? (
+                  <QueryStateAlert
+                    title="监测摘要加载失败"
+                    description={glucoseTrendData.statsQuery.error.message}
+                    onRetry={() => void glucoseTrendData.statsQuery.refetch()}
+                  />
+                ) : (
+                  <PatientGlucoseSummarySection stats={glucoseTrendData.statsQuery.data} />
+                )}
+              </div>
+            </ScrollStackItem>
+
+            <ScrollStackItem index={3}>
+              <div className="patient-stack-stage patient-stack-stage--glucose-records">
+                <PatientGlucoseRecordsSection patientId={patient.id} />
+              </div>
+            </ScrollStackItem>
+
+            <ScrollStackItem index={4}>
+              <div className="patient-stack-stage patient-stack-stage--diet">
+                <PatientDietPanel patientId={patient.id} />
               </div>
             </ScrollStackItem>
           </ScrollStack>

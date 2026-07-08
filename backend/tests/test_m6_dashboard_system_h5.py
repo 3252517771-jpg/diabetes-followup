@@ -71,6 +71,26 @@ async def test_dashboard_system_and_h5_flow(client):
     )
     assert glucose_response.status_code == 201
     assert glucose_response.json()["data"]["source"] == "patient"
+    record_id = glucose_response.json()["data"]["id"]
+
+    recent_response = await client.get(f"/api/h5/api/patient/glucose/recent?token={h5_token}&limit=5")
+    assert recent_response.status_code == 200
+    assert recent_response.json()["data"][0]["id"] == record_id
+    assert recent_response.json()["data"][0]["editable"] is True
+
+    update_response = await client.put(
+        f"/api/h5/api/patient/glucose/{record_id}",
+        json={
+            "value": "5.80",
+            "measure_time": datetime.now().isoformat(),
+            "category": "postprandial",
+            "notes": "edited by h5",
+        },
+        headers={"X-H5-Token": h5_token},
+    )
+    assert update_response.status_code == 200
+    assert update_response.json()["data"]["category"] == "postprandial"
+    assert update_response.json()["data"]["notes"] == "edited by h5"
 
     trend_response = await client.get("/api/dashboard/glucose-trend?days=7", headers=doctor_headers)
     assert trend_response.status_code == 200

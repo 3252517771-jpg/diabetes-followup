@@ -4,7 +4,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.schemas.common import ApiResponse
 from app.schemas.glucose import BloodGlucoseRecordRead
-from app.schemas.h5 import H5AccessLinkRead, H5GlucoseCreate, H5PatientInfo, H5TaskItem
+from app.schemas.h5 import (
+    H5AccessLinkRead,
+    H5GlucoseCreate,
+    H5GlucoseUpdate,
+    H5PatientInfo,
+    H5RecentGlucoseRecordRead,
+    H5TaskItem,
+)
 from app.services.h5_service import H5Service
 from app.utils.dependencies import get_current_user
 
@@ -47,6 +54,25 @@ async def create_h5_glucose_record(
     service: H5Service = Depends(get_h5_service),
 ) -> ApiResponse[BloodGlucoseRecordRead]:
     return ApiResponse(code=201, message="created", data=await service.create_glucose_record(x_h5_token, payload))
+
+
+@router.get("/h5/api/patient/glucose/recent", response_model=ApiResponse[list[H5RecentGlucoseRecordRead]])
+async def list_h5_recent_glucose_records(
+    token: str = Query(...),
+    limit: int = Query(default=5, ge=1, le=20),
+    service: H5Service = Depends(get_h5_service),
+) -> ApiResponse[list[H5RecentGlucoseRecordRead]]:
+    return ApiResponse(code=200, message="ok", data=await service.list_recent_glucose_records(token, limit=limit))
+
+
+@router.put("/h5/api/patient/glucose/{record_id}", response_model=ApiResponse[BloodGlucoseRecordRead])
+async def update_h5_glucose_record(
+    record_id: int,
+    payload: H5GlucoseUpdate,
+    x_h5_token: str = Header(..., alias="X-H5-Token"),
+    service: H5Service = Depends(get_h5_service),
+) -> ApiResponse[BloodGlucoseRecordRead]:
+    return ApiResponse(code=200, message="ok", data=await service.update_glucose_record(x_h5_token, record_id, payload))
 
 
 @router.get("/h5/api/patient/notifications", response_model=ApiResponse[list[dict]])

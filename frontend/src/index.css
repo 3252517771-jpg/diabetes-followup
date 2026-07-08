@@ -418,19 +418,6 @@ body {
   border-radius: 999px;
 }
 
-.patient-section-card {
-  overflow: hidden;
-}
-
-.patient-section-card__header {
-  margin-bottom: 18px;
-}
-
-.patient-section-card--glucose {
-  border-color: rgba(37, 99, 235, 0.18);
-  box-shadow: 0 20px 42px rgba(15, 23, 42, 0.05);
-}
-
 .scroll-stack {
   position: relative;
   display: flex;
@@ -449,23 +436,23 @@ body {
 .patient-stack-stage {
   min-height: var(--scroll-stack-stage-height, calc(100vh - 220px));
   display: flex;
-  align-items: flex-start;
+  flex-direction: column;
+  align-items: stretch;
   width: 100%;
-  padding: 0 0 20px;
+  padding: 26px 26px 24px;
+  border: 1px solid rgba(229, 229, 229, 0.96);
   border-radius: 20px;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.96) 100%);
   box-shadow: 0 22px 48px rgba(15, 23, 42, 0.06);
+  overflow: hidden;
 }
 
-.scroll-stack__item .patient-section-card {
-  width: 100%;
-  margin: 0;
-  box-shadow: none;
-  transform: translateY(calc(var(--stack-index) * -10px));
+.scroll-stack__item .patient-stack-stage {
+  transform: translateY(calc((var(--stack-index) * -10px) + var(--scroll-stack-card-shift, 0px)));
 }
 
 .scroll-stack__item + .scroll-stack__item {
-  margin-top: -240px;
+  margin-top: calc((var(--scroll-stack-overlap, 240px) * -1) + var(--scroll-stack-entry-offset, 0px));
 }
 
 .scroll-stack__item:nth-child(2) .patient-stack-stage {
@@ -474,6 +461,158 @@ body {
 
 .scroll-stack__item:nth-child(3) .patient-stack-stage {
   box-shadow: 0 30px 56px rgba(15, 23, 42, 0.1);
+}
+
+.patient-stack-stage .panel-card {
+  box-shadow: none;
+}
+
+.patient-stack-stage .glucose-panel-header,
+.patient-stack-stage .diet-panel-header {
+  margin-bottom: 0;
+}
+
+.patient-glucose-trend-card,
+.patient-glucose-summary-card,
+.patient-glucose-records-card,
+.patient-diet-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+.patient-glucose-trend-card__intro,
+.patient-glucose-records-card__header,
+.patient-diet-timeline__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.patient-glucose-trend-card__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.75fr) minmax(240px, 0.85fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+.patient-glucose-trend-card__chart,
+.patient-glucose-trend-card__summary {
+  min-width: 0;
+}
+
+.patient-glucose-summary-card__hero-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.patient-glucose-summary-card__metric-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.patient-glucose-metric-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 18px;
+  border: 1px solid rgba(228, 228, 231, 0.92);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.patient-glucose-metric-card__label,
+.patient-diet-timeline__event-time {
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.patient-glucose-metric-card__value {
+  font-size: 24px;
+  line-height: 1.1;
+}
+
+.patient-glucose-metric-card__hint,
+.patient-diet-timeline__event-note {
+  color: #737373;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.patient-glucose-records-card__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.patient-glucose-status {
+  display: inline-flex;
+  align-items: center;
+  min-width: 44px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.patient-glucose-status--danger {
+  background: rgba(254, 226, 226, 0.82);
+  color: #dc2626;
+}
+
+.patient-glucose-status--success {
+  background: rgba(220, 252, 231, 0.85);
+  color: #16a34a;
+}
+
+.patient-glucose-note-cell {
+  display: inline-block;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.patient-diet-timeline__entry {
+  padding: 18px 18px 8px;
+  border: 1px solid rgba(228, 228, 231, 0.92);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.74);
+}
+
+.patient-diet-timeline__entry-meta {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.patient-diet-timeline__event-summary {
+  margin: 6px 0 8px !important;
+  color: #404040;
+}
+
+.patient-diet-timeline__event-note,
+.patient-diet-timeline__event-summary {
+  line-height: 1.7;
+}
+
+.patient-diet-timeline__meals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 4px 26px;
+}
+
+.patient-diet-timeline--loading {
+  min-height: 220px;
 }
 
 .metric-card {
@@ -1254,7 +1393,10 @@ body {
   .dashboard-summary-metrics,
   .dashboard-secondary-layout,
   .glucose-main-layout,
-  .notification-detail__meta-grid {
+  .notification-detail__meta-grid,
+  .patient-glucose-trend-card__layout,
+  .patient-glucose-summary-card__hero-grid,
+  .patient-glucose-summary-card__metric-grid {
     grid-template-columns: 1fr;
   }
 
@@ -1313,7 +1455,7 @@ body {
     margin-bottom: 20px;
   }
 
-  .scroll-stack__item .patient-section-card {
+  .scroll-stack__item .patient-stack-stage {
     transform: none;
   }
 
@@ -1323,9 +1465,22 @@ body {
 
   .patient-stack-stage {
     min-height: auto;
-    padding-bottom: 0;
+    padding: 20px;
     background: transparent;
     box-shadow: none;
+  }
+
+  .patient-glucose-trend-card__intro,
+  .patient-glucose-records-card__header,
+  .patient-diet-timeline__header,
+  .patient-glucose-records-card__toolbar,
+  .patient-diet-timeline__entry-meta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .patient-diet-timeline__meals {
+    margin-left: 0;
   }
 
   .diet-review-scroll {

@@ -41,7 +41,9 @@ textarea {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  padding: 16px;
+  width: min(100%, 560px);
+  margin: 0 auto;
+  padding: 16px 16px 28px;
 }
 
 .h5-card {
@@ -59,6 +61,16 @@ textarea {
   gap: 12px;
 }
 
+.h5-card--summary,
+.h5-card--status {
+  padding-top: 14px;
+  padding-bottom: 14px;
+}
+
+.h5-hero-copy {
+  min-width: 0;
+}
+
 .h5-kicker {
   margin: 0 0 6px;
   color: #2563eb;
@@ -71,6 +83,11 @@ textarea {
 .h5-card h1,
 .h5-card h2 {
   margin: 0;
+}
+
+.h5-card h1 {
+  font-size: 28px;
+  line-height: 1.08;
 }
 
 .h5-card h2 {
@@ -97,15 +114,47 @@ textarea {
   background: #f8fbff;
 }
 
+.h5-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.h5-summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid #ececec;
+  border-radius: 12px;
+  background: #fcfcfb;
+}
+
+.h5-summary-item__label,
+.h5-inline-hint {
+  color: #737373;
+  font-size: 12px;
+}
+
+.h5-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
 .h5-task-list,
-.h5-notification-list {
+.h5-notification-list,
+.h5-record-list {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
 .h5-task-item,
-.h5-notification-item {
+.h5-notification-item,
+.h5-record-item {
   border: 1px solid #ececec;
   border-radius: 12px;
   padding: 12px;
@@ -120,7 +169,8 @@ textarea {
 
 .h5-task-item span,
 .h5-notification-item p,
-.h5-notification-item small {
+.h5-notification-item small,
+.h5-record-item__notes {
   color: #525252;
   line-height: 1.5;
 }
@@ -128,6 +178,12 @@ textarea {
 .h5-form {
   display: flex;
   flex-direction: column;
+  gap: 12px;
+}
+
+.h5-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -157,7 +213,25 @@ textarea {
   background: #2563eb;
 }
 
-.h5-form button:disabled {
+.h5-form-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.h5-form-actions button {
+  flex: 1 1 0;
+}
+
+.h5-secondary-button {
+  border: 1px solid #d4d4d8;
+  border-radius: 12px;
+  padding: 11px 14px;
+  color: #171717;
+  background: #fff;
+}
+
+.h5-form button:disabled,
+.h5-secondary-button:disabled {
   opacity: 0.6;
 }
 
@@ -179,10 +253,100 @@ textarea {
   color: #b91c1c;
 }
 
-.h5-notification-top {
+.h5-notification-top,
+.h5-record-item__top,
+.h5-record-item__actions {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 12px;
+}
+
+.h5-notification-top {
   margin-bottom: 6px;
+}
+
+.h5-notification-meta {
+  margin-bottom: 8px;
+}
+
+.h5-record-item.is-active {
+  border-color: #93c5fd;
+  background: #f8fbff;
+}
+
+.h5-record-item__top {
+  align-items: flex-start;
+}
+
+.h5-record-item__meta {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+  color: #737373;
+  font-size: 13px;
+}
+
+.h5-record-item__notes {
+  margin: 10px 0 0;
+}
+
+.h5-record-item__actions {
+  margin-top: 12px;
+}
+
+.h5-status-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.h5-status-badge.is-normal {
+  background: #effaf2;
+  color: #166534;
+}
+
+.h5-status-badge.is-neutral {
+  background: #f3f4f6;
+  color: #525252;
+}
+
+.h5-status-badge.is-warning {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.h5-status-badge.is-danger,
+.h5-status-badge.is-abnormal {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+@media (max-width: 480px) {
+  .h5-card--hero {
+    flex-direction: column;
+  }
+
+  .h5-link {
+    width: 100%;
+  }
+
+  .h5-summary-grid,
+  .h5-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .h5-form-actions {
+    flex-direction: column;
+  }
+
+  .h5-record-item__top,
+  .h5-record-item__actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }

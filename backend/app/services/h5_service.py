@@ -1,4 +1,5 @@
 from datetime import timedelta
+from decimal import Decimal
 
 from fastapi import HTTPException, status
 from sqlalchemy import select
@@ -9,7 +10,14 @@ from app.models.glucose import BloodGlucoseRecord
 from app.models.notification import NotificationLog
 from app.models.patient import Patient
 from app.schemas.glucose import BloodGlucoseRecordRead
-from app.schemas.h5 import H5AccessLinkRead, H5GlucoseCreate, H5PatientInfo, H5TaskItem
+from app.schemas.h5 import (
+    H5AccessLinkRead,
+    H5GlucoseCreate,
+    H5GlucoseUpdate,
+    H5PatientInfo,
+    H5RecentGlucoseRecordRead,
+    H5TaskItem,
+)
 from app.utils.security import create_access_token, decode_access_token
 
 
@@ -60,6 +68,7 @@ class H5Service:
 
     async def create_glucose_record(self, token: str, payload: H5GlucoseCreate) -> BloodGlucoseRecordRead:
         patient = await self._get_patient_by_token(token)
+        is_abnormal, reason = self._judge_abnormal(payload.category, payload.value)
         record = BloodGlucoseRecord(
             patient_id=patient.id,
             value=payload.value,
@@ -67,9 +76,55 @@ class H5Service:
             category=payload.category,
             source="patient",
             notes=payload.notes,
-            is_abnormal=False,
+            is_abnormal=is_abnormal,
+            abnormal_reason=reason,
         )
         self.db.add(record)
+        await self.db.commit()
+        await self.db.refresh(record)
+        return BloodGlucoseRecordRead.model_validate(record)
+
+    async def list_recent_glucose_records(self, token: str, *, limit: int) -> list[H5RecentGlucoseRecordRead]:
+        patient = await self._get_patient_by_token(token)
+        result = await self.db.execute(
+            select(BloodGlucoseRecord)
+            .where(
+                BloodGlucoseRecord.patient_id == patient.id,
+                BloodGlucoseRecord.source == "patient",
+            )
+            .order_by(BloodGlucoseRecord.measure_time.desc(), BloodGlucoseRecord.id.desc())
+            .limit(limit)
+        )
+        return [
+            H5RecentGlucoseRecordRead(**BloodGlucoseRecordRead.model_validate(record).model_dump(), editable=True)
+            for record in result.scalars().all()
+        ]
+
+    async def update_glucose_record(
+        self,
+        token: str,
+        record_id: int,
+        payload: H5GlucoseUpdate,
+    ) -> BloodGlucoseRecordRead:
+        patient = await self._get_patient_by_token(token)
+        record = await self.db.scalar(
+            select(BloodGlucoseRecord).where(
+                BloodGlucoseRecord.id == record_id,
+                BloodGlucoseRecord.patient_id == patient.id,
+                BloodGlucoseRecord.source == "patient",
+            )
+        )
+        if record is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Glucose record not found")
+
+        is_abnormal, reason = self._judge_abnormal(payload.category, payload.value)
+        record.value = payload.value
+        record.measure_time = payload.measure_time
+        record.category = payload.category
+        record.notes = payload.notes
+        record.is_abnormal = is_abnormal
+        record.abnormal_reason = reason
+
         await self.db.commit()
         await self.db.refresh(record)
         return BloodGlucoseRecordRead.model_validate(record)
@@ -108,3 +163,20 @@ class H5Service:
         if patient is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Patient not found")
         return patient
+
+    def _judge_abnormal(self, category: str, value) -> tuple[bool, str | None]:
+        ranges = {
+            "fasting": ("3.9", "6.1"),
+            "postprandial": ("3.9", "7.8"),
+            "bedtime": ("3.9", "7.0"),
+            "random": ("3.9", "11.1"),
+        }
+        if category not in ranges:
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid glucose category")
+
+        low, high = ranges[category]
+        if value < Decimal(low):
+            return True, "low"
+        if value > Decimal(high):
+            return True, "high"
+        return False, None

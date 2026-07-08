@@ -3,6 +3,8 @@ from decimal import Decimal
 
 from pydantic import BaseModel, Field
 
+from app.schemas.glucose import BloodGlucoseRecordRead
+
 
 class H5PatientInfo(BaseModel):
     id: int
@@ -27,8 +29,18 @@ class H5GlucoseCreate(BaseModel):
     notes: str | None = Field(default=None, max_length=500)
 
 
+class H5GlucoseUpdate(BaseModel):
+    value: Decimal = Field(gt=0, le=50, decimal_places=2)
+    measure_time: datetime
+    category: str = Field(max_length=20)
+    notes: str | None = Field(default=None, max_length=500)
+
+
 class H5TaskItem(BaseModel):
     key: str
     title: str
     description: str
 
+
+class H5RecentGlucoseRecordRead(BloodGlucoseRecordRead):
+    editable: bool = True
