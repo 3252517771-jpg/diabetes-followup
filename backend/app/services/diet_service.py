@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 from fastapi import HTTPException, status
 from sqlalchemy import Select, distinct, select
@@ -108,7 +108,7 @@ class DietService:
         recommendation.review_status = "approved"
         recommendation.reviewer_id = self.current_user.id
         recommendation.review_comment = payload.review_comment
-        recommendation.reviewed_at = datetime.now(UTC).replace(tzinfo=None)
+        recommendation.reviewed_at = datetime.now(timezone.utc).replace(tzinfo=None)
         if payload.edited_content is not None:
             recommendation.content = payload.edited_content.model_dump()
 
@@ -149,7 +149,7 @@ class DietService:
         recommendation.review_status = "rejected"
         recommendation.reviewer_id = self.current_user.id
         recommendation.review_comment = payload.review_comment
-        recommendation.reviewed_at = datetime.now(UTC).replace(tzinfo=None)
+        recommendation.reviewed_at = datetime.now(timezone.utc).replace(tzinfo=None)
         if payload.edited_content is not None:
             recommendation.content = payload.edited_content.model_dump()
 
