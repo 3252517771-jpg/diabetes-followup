@@ -1,4 +1,4 @@
-import { Avatar, Button, Layout, Space, Typography } from 'antd'
+import { Avatar, Button, Layout, Typography } from 'antd'
 import {
   DashboardOutlined,
   LineChartOutlined,
@@ -15,8 +15,8 @@ import { useLocation, useNavigate } from 'react-router-dom'
 
 import { ROUTE_PATHS } from '../../config/routes'
 import { useAuth } from '../../hooks/useAuth'
+import { BlurText } from '../reactbits/BlurText'
 import { StaggeredMenu } from '../reactbits/StaggeredMenu'
-import { TextType } from '../reactbits/TextType'
 
 const { Header, Content } = Layout
 
@@ -100,15 +100,16 @@ export function MainLayout({ children }: PropsWithChildren) {
             />
             <div className="app-header__title-group">
               <Typography.Text className="brand-kicker">{currentMeta.kicker}</Typography.Text>
-              <Typography.Title level={5} className="page-title app-header__title">
-                <TextType text={currentMeta.title} as="span" speed={28} />
+              <Typography.Title level={3} className="page-title app-header__title">
+                <BlurText text={currentMeta.title} as="span" delay={130} stepDuration={0.52} />
               </Typography.Title>
             </div>
           </div>
-          <Space size={12}>
+
+          <div className="app-header__actions">
             <div className="user-pill">
-              <Avatar size={32} icon={<UserOutlined />} />
-              <div>
+              <Avatar size={30} icon={<UserOutlined />} />
+              <div className="user-pill__content">
                 <div className="user-pill__name">{user?.real_name ?? '未登录'}</div>
                 <div className="user-pill__meta">{user?.department ?? '内分泌科'}</div>
               </div>
@@ -116,7 +117,7 @@ export function MainLayout({ children }: PropsWithChildren) {
             <Button icon={<LogoutOutlined />} onClick={handleLogout}>
               退出
             </Button>
-          </Space>
+          </div>
         </Header>
         <Content className="app-content">{children}</Content>
       </Layout>

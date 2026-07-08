@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   App,
@@ -13,7 +13,15 @@ import {
   Tag,
   Typography,
 } from 'antd'
-import { BellOutlined, CheckOutlined } from '@ant-design/icons'
+import {
+  BellOutlined,
+  CheckCircleOutlined,
+  CheckOutlined,
+  ClockCircleOutlined,
+  ExclamationCircleOutlined,
+  MessageOutlined,
+  RightOutlined,
+} from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 
 import { QueryStateAlert } from '../components/QueryStateAlert'
@@ -26,11 +34,45 @@ import {
 } from '../services/notificationService'
 import type { NotificationItem } from '../types/notification'
 
-const notificationTypeLabel = {
-  todo: '待办',
-  notification: '通知',
-  announcement: '公告',
+const notificationTypeMeta = {
+  todo: { label: '待办', color: 'processing' },
+  notification: { label: '通知', color: 'blue' },
+  announcement: { label: '公告', color: 'purple' },
 } as const
+
+const notificationStatusMeta = {
+  unread: { label: '未读', color: 'gold' },
+  read: { label: '已读', color: 'blue' },
+  sent: { label: '已发送', color: 'cyan' },
+  failed: { label: '发送失败', color: 'red' },
+} as const
+
+function formatDateTime(value: string) {
+  return value.replace('T', ' ').slice(0, 16)
+}
+
+function getChannelLabel(channel: string) {
+  if (channel === 'wechat') {
+    return '微信通知'
+  }
+  if (channel === 'system') {
+    return '站内消息'
+  }
+  return channel || '未标记渠道'
+}
+
+function getNotificationSummary(item: NotificationItem) {
+  if (item.notification_type === 'todo') {
+    return '这条消息需要尽快处理，建议优先执行关联动作，再回看正文细节。'
+  }
+  if (item.fail_reason) {
+    return '消息主体已生成，但推送链路出现异常，建议先检查失败原因与目标入口。'
+  }
+  if (item.notification_type === 'announcement') {
+    return '这是一条面向当前用户的系统公告，可先快速浏览摘要，再决定是否进入关联页面。'
+  }
+  return '这是一条常规业务通知，建议先确认状态，再进入相关页面继续处理。'
+}
 
 export function NotificationPage() {
   const [typeFilter, setTypeFilter] = useState<'todo' | 'notification' | 'announcement'>('todo')
@@ -55,7 +97,7 @@ export function NotificationPage() {
     queryFn: async () => {
       const response = await fetchUnreadNotificationCount()
       if (!response.data) {
-        throw new Error(response.message || '未读数加载失败')
+        throw new Error(response.message || '未读数量加载失败')
       }
       return response.data
     },
@@ -91,6 +133,24 @@ export function NotificationPage() {
   const unreadCount = unreadCountQuery.data?.unread_count ?? 0
   const unreadItems = items.filter((item) => item.status === 'unread').length
 
+  const selectedTypeMeta = selectedNotification
+    ? notificationTypeMeta[selectedNotification.notification_type]
+    : null
+  const selectedStatusMeta = selectedNotification
+    ? notificationStatusMeta[selectedNotification.status]
+    : null
+
+  const detailMetaItems = useMemo(() => {
+    if (!selectedNotification) {
+      return []
+    }
+    return [
+      { label: '发送时间', value: formatDateTime(selectedNotification.sent_at) },
+      { label: '通知渠道', value: getChannelLabel(selectedNotification.channel) },
+      { label: '接收对象', value: `${selectedNotification.recipient_type} #${selectedNotification.recipient_id}` },
+    ]
+  }, [selectedNotification])
+
   return (
     <div className="page-shell">
       <div className="page-toolbar followup-toolbar">
@@ -100,14 +160,18 @@ export function NotificationPage() {
             消息中心
           </Typography.Title>
           <Typography.Paragraph className="panel-subtitle">
-            待审核推荐、审核结果与系统通知统一在这里汇总，均来自真实后端消息接口。
+            待办提醒、审核结果与系统通知统一汇总在这里，页面默认直连真实后端消息接口。
           </Typography.Paragraph>
         </div>
         <Space>
           <Badge count={unreadCount}>
             <Button icon={<BellOutlined />}>未读</Button>
           </Badge>
-          <Button icon={<CheckOutlined />} onClick={() => markAllReadMutation.mutate()}>
+          <Button
+            icon={<CheckOutlined />}
+            onClick={() => markAllReadMutation.mutate()}
+            loading={markAllReadMutation.isPending}
+          >
             全部已读
           </Button>
         </Space>
@@ -161,7 +225,9 @@ export function NotificationPage() {
                     <div>
                       <Space wrap>
                         <Typography.Text strong>{item.title}</Typography.Text>
-                        <Tag>{notificationTypeLabel[item.notification_type]}</Tag>
+                        <Tag color={notificationTypeMeta[item.notification_type].color}>
+                          {notificationTypeMeta[item.notification_type].label}
+                        </Tag>
                         {item.fail_reason ? <Tag color="red">推送异常</Tag> : null}
                       </Space>
                       <Typography.Paragraph className="notification-list-item__body">
@@ -169,9 +235,7 @@ export function NotificationPage() {
                       </Typography.Paragraph>
                     </div>
                   </Space>
-                  <Typography.Text type="secondary">
-                    {item.sent_at.replace('T', ' ').slice(0, 16)}
-                  </Typography.Text>
+                  <Typography.Text type="secondary">{formatDateTime(item.sent_at)}</Typography.Text>
                 </div>
               </List.Item>
             )}
@@ -185,48 +249,101 @@ export function NotificationPage() {
       <Drawer
         title="消息详情"
         open={selectedNotification !== null}
-        width={520}
+        width={560}
         onClose={() => setSelectedNotification(null)}
       >
         {selectedNotification ? (
-          <Space direction="vertical" size={16} style={{ width: '100%' }}>
-            <Space wrap>
-              <Tag>{notificationTypeLabel[selectedNotification.notification_type]}</Tag>
-              <Tag color={selectedNotification.status === 'unread' ? 'gold' : 'blue'}>
-                {selectedNotification.status === 'unread' ? '未读' : '已读'}
-              </Tag>
-            </Space>
-            <Typography.Title level={4} style={{ margin: 0 }}>
-              {selectedNotification.title}
-            </Typography.Title>
-            <Typography.Paragraph>{selectedNotification.body}</Typography.Paragraph>
+          <div className="notification-detail">
+            <section className="notification-detail__hero">
+              <div className="notification-detail__hero-head">
+                <Space wrap>
+                  {selectedTypeMeta ? (
+                    <Tag color={selectedTypeMeta.color}>{selectedTypeMeta.label}</Tag>
+                  ) : null}
+                  {selectedStatusMeta ? (
+                    <Tag color={selectedStatusMeta.color}>{selectedStatusMeta.label}</Tag>
+                  ) : null}
+                  {selectedNotification.fail_reason ? <Tag color="red">需检查推送链路</Tag> : null}
+                </Space>
+                <Typography.Text type="secondary">
+                  <ClockCircleOutlined /> {formatDateTime(selectedNotification.sent_at)}
+                </Typography.Text>
+              </div>
+
+              <Typography.Title level={4} className="notification-detail__title">
+                {selectedNotification.title}
+              </Typography.Title>
+              <Typography.Paragraph className="notification-detail__summary">
+                {getNotificationSummary(selectedNotification)}
+              </Typography.Paragraph>
+
+              <div className="notification-detail__actions">
+                {selectedNotification.action_path ? (
+                  <Button
+                    type="primary"
+                    icon={<RightOutlined />}
+                    onClick={() => {
+                      navigate(selectedNotification.action_path as string)
+                      setSelectedNotification(null)
+                    }}
+                  >
+                    {selectedNotification.action_label || '进入关联页面'}
+                  </Button>
+                ) : (
+                  <Button type="default" disabled icon={<RightOutlined />}>
+                    暂无关联页面
+                  </Button>
+                )}
+
+                {selectedNotification.status === 'unread' ? (
+                  <Button
+                    icon={<CheckCircleOutlined />}
+                    onClick={() => markReadMutation.mutate(selectedNotification.id)}
+                    loading={markReadMutation.isPending}
+                  >
+                    标记已读
+                  </Button>
+                ) : (
+                  <Button disabled icon={<CheckCircleOutlined />}>
+                    已处理
+                  </Button>
+                )}
+              </div>
+            </section>
+
+            <section className="notification-detail__meta-grid">
+              {detailMetaItems.map((metaItem) => (
+                <div key={metaItem.label} className="notification-detail__meta-card">
+                  <Typography.Text className="notification-detail__meta-label">
+                    {metaItem.label}
+                  </Typography.Text>
+                  <Typography.Text strong>{metaItem.value}</Typography.Text>
+                </div>
+              ))}
+            </section>
+
+            <section className="notification-detail__body-card">
+              <div className="notification-detail__section-head">
+                <MessageOutlined />
+                <Typography.Text strong>消息正文</Typography.Text>
+              </div>
+              <Typography.Paragraph className="notification-detail__body-text">
+                {selectedNotification.body}
+              </Typography.Paragraph>
+            </section>
+
             {selectedNotification.fail_reason ? (
-              <Typography.Text type="danger">
-                推送异常：{selectedNotification.fail_reason}
-              </Typography.Text>
+              <section className="notification-detail__error-card">
+                <div className="notification-detail__section-head notification-detail__section-head--danger">
+                  <ExclamationCircleOutlined />
+                  <Typography.Text strong>推送失败原因</Typography.Text>
+                </div>
+                <Typography.Paragraph className="notification-detail__body-text notification-detail__body-text--danger">
+                  {selectedNotification.fail_reason}
+                </Typography.Paragraph>
+              </section>
             ) : null}
-            <Space>
-              {selectedNotification.action_path ? (
-                <Button
-                  type="primary"
-                  onClick={() => {
-                    navigate(selectedNotification.action_path as string)
-                    setSelectedNotification(null)
-                  }}
-                >
-                  {selectedNotification.action_label || '查看关联页面'}
-                </Button>
-              ) : null}
-              {selectedNotification.status === 'unread' ? (
-                <Button
-                  onClick={() => markReadMutation.mutate(selectedNotification.id)}
-                  loading={markReadMutation.isPending}
-                >
-                  标记已读
-                </Button>
-              ) : null}
-            </Space>
-          </Space>
+          </div>
         ) : (
           <EmptyMotion description="未选择消息" />
         )}
