@@ -4,6 +4,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import {
   fetchPatientInfo,
   fetchPatientNotifications,
+  markPatientNotificationRead,
   type H5NotificationItem,
   type H5PatientInfo,
 } from '../services/h5Service'
@@ -50,13 +51,14 @@ function getStatusClassName(item: H5NotificationItem) {
 export function NotificationListPage() {
   const [searchParams] = useSearchParams()
   const token = searchParams.get('token') ?? ''
+  const phoneLast4 = getStoredPhoneLast4(token)
   const [patient, setPatient] = useState<H5PatientInfo | null>(null)
   const [items, setItems] = useState<H5NotificationItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [markingId, setMarkingId] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const phoneLast4 = getStoredPhoneLast4(token)
     if (!token) {
       setLoading(false)
       setError('缺少访问令牌，请重新打开链接。')
@@ -85,12 +87,30 @@ export function NotificationListPage() {
     }
 
     void bootstrap()
-  }, [token])
+  }, [phoneLast4, token])
 
   const unreadCount = useMemo(
     () => items.filter((item) => item.status === 'unread' && !item.fail_reason).length,
     [items],
   )
+
+  async function handleMarkRead(item: H5NotificationItem) {
+    if (!token || !phoneLast4 || item.status !== 'unread' || item.fail_reason) {
+      return
+    }
+
+    setMarkingId(item.id)
+    try {
+      const response = await markPatientNotificationRead(token, phoneLast4, item.id)
+      if (response.data) {
+        setItems((current) => current.map((entry) => (entry.id === item.id ? response.data! : entry)))
+      }
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : '消息状态更新失败')
+    } finally {
+      setMarkingId(null)
+    }
+  }
 
   return (
     <main className="h5-shell">
@@ -144,7 +164,19 @@ export function NotificationListPage() {
 
         <div className="h5-notification-list">
           {items.map((item) => (
-            <article key={item.id} className="h5-notification-item">
+            <article
+              key={item.id}
+              className="h5-notification-item"
+              role="button"
+              tabIndex={0}
+              onClick={() => void handleMarkRead(item)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault()
+                  void handleMarkRead(item)
+                }
+              }}
+            >
               <div className="h5-notification-top">
                 <strong>{getChannelLabel(item.channel)}</strong>
                 <span>{item.sent_at.slice(0, 16).replace('T', ' ')}</span>
@@ -156,7 +188,13 @@ export function NotificationListPage() {
 
               <p>{item.content}</p>
 
-              <small>{item.fail_reason ? `失败原因：${item.fail_reason}` : `消息状态：${getStatusLabel(item)}`}</small>
+              <small>
+                {item.fail_reason
+                  ? `失败原因：${item.fail_reason}`
+                  : markingId === item.id
+                    ? '正在更新消息状态...'
+                    : `消息状态：${getStatusLabel(item)}`}
+              </small>
             </article>
           ))}
         </div>

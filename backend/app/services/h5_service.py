@@ -15,6 +15,7 @@ from app.schemas.h5 import (
     H5AccessLinkRead,
     H5GlucoseCreate,
     H5GlucoseUpdate,
+    H5NotificationItemRead,
     H5PatientInfo,
     H5RecentGlucoseRecordRead,
     H5TaskItem,
@@ -61,8 +62,8 @@ class H5Service:
         tasks = [
             H5TaskItem(
                 key="glucose",
-                title="Record glucose",
-                description="Submit today's glucose data for doctor follow-up.",
+                title="记录血糖",
+                description="提交今天的血糖数据，方便医生随访跟进。",
             ),
         ]
         pending_recommendation = await self.db.scalar(
@@ -75,8 +76,8 @@ class H5Service:
             tasks.append(
                 H5TaskItem(
                     key="diet",
-                    title="View diet recommendation",
-                    description="Review the latest approved diet guidance.",
+                    title="查看饮食建议",
+                    description="查看最新审核通过的饮食推荐内容。",
                 )
             )
         return tasks
@@ -156,26 +157,55 @@ class H5Service:
         await self.db.refresh(record)
         return BloodGlucoseRecordRead.model_validate(record)
 
-    async def list_notifications(self, token: str, phone_last4: str) -> list[dict]:
+    async def list_notifications(self, token: str, phone_last4: str) -> list[H5NotificationItemRead]:
         patient = await self._get_patient_by_token(token, phone_last4)
         result = await self.db.execute(
             select(NotificationLog)
             .where(NotificationLog.recipient_type == "patient", NotificationLog.recipient_id == patient.id)
             .order_by(NotificationLog.sent_at.desc(), NotificationLog.id.desc())
         )
-        notifications = []
-        for item in result.scalars().all():
-            notifications.append(
-                {
-                    "id": item.id,
-                    "status": item.status,
-                    "channel": item.channel,
-                    "content": item.content_sent,
-                    "sent_at": item.sent_at.isoformat(),
-                    "fail_reason": item.fail_reason,
-                }
+        return [
+            H5NotificationItemRead(
+                id=item.id,
+                status=item.status,
+                channel=item.channel,
+                content=item.content_sent,
+                sent_at=item.sent_at.isoformat(),
+                fail_reason=item.fail_reason,
             )
-        return notifications
+            for item in result.scalars().all()
+        ]
+
+    async def mark_notification_read(
+        self,
+        token: str,
+        phone_last4: str,
+        notification_id: int,
+    ) -> H5NotificationItemRead:
+        patient = await self._get_patient_by_token(token, phone_last4)
+        notification = await self.db.scalar(
+            select(NotificationLog).where(
+                NotificationLog.id == notification_id,
+                NotificationLog.recipient_type == "patient",
+                NotificationLog.recipient_id == patient.id,
+            )
+        )
+        if notification is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Notification not found")
+
+        if notification.status == "unread":
+            notification.status = "read"
+            await self.db.commit()
+            await self.db.refresh(notification)
+
+        return H5NotificationItemRead(
+            id=notification.id,
+            status=notification.status,
+            channel=notification.channel,
+            content=notification.content_sent,
+            sent_at=notification.sent_at.isoformat(),
+            fail_reason=notification.fail_reason,
+        )
 
     async def _get_patient_by_token(self, token: str, phone_last4: str) -> Patient:
         try:

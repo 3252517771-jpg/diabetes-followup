@@ -69,6 +69,16 @@ export async function fetchPatientNotifications(token: string, phoneLast4: strin
   return request<H5NotificationItem[]>(`/h5/api/patient/notifications?${buildSecureQuery(token, phoneLast4)}`)
 }
 
+export async function markPatientNotificationRead(token: string, phoneLast4: string, notificationId: number) {
+  return request<H5NotificationItem>(`/h5/api/patient/notifications/${notificationId}/read`, {
+    method: 'PUT',
+    headers: {
+      'X-H5-Token': token,
+      'X-H5-Phone-Last4': phoneLast4,
+    },
+  })
+}
+
 export async function submitPatientGlucose(token: string, phoneLast4: string, payload: H5GlucosePayload) {
   return request<H5SubmittedGlucoseRecord>('/h5/api/patient/glucose', {
     method: 'POST',

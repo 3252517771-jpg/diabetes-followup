@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from typing import Any
 
 from fastapi import HTTPException, status
 from sqlalchemy import Select, distinct, select
@@ -244,7 +245,7 @@ class DietService:
     async def _build_recommendation_read(self, recommendation: DietRecommendation) -> DietRecommendationRead:
         patient = await self.db.get(Patient, recommendation.patient_id)
         reviewer = await self.db.get(User, recommendation.reviewer_id) if recommendation.reviewer_id else None
-        content = DietRecommendationContent.model_validate(recommendation.content)
+        content = self._normalize_recommendation_content(recommendation.content)
         return DietRecommendationRead(
             id=recommendation.id,
             patient_id=recommendation.patient_id,
@@ -261,6 +262,35 @@ class DietService:
             created_at=recommendation.created_at,
             reviewed_at=recommendation.reviewed_at,
         )
+
+    def _normalize_recommendation_content(self, content: Any) -> DietRecommendationContent:
+        if isinstance(content, DietRecommendationContent):
+            return content
+
+        if isinstance(content, dict):
+            try:
+                return DietRecommendationContent.model_validate(content)
+            except Exception:
+                legacy_summary = str(content.get("summary") or "").strip()
+                legacy_notes = str(content.get("risk_focus") or content.get("notes") or "").strip()
+                guidance = content.get("meal_guidance")
+                foods = [str(item).strip() for item in guidance if str(item).strip()] if isinstance(guidance, list) else []
+                normalized = {
+                    "meals": [
+                        {
+                            "meal_type": "general",
+                            "foods": foods,
+                            "tips": legacy_summary or "请结合近期血糖变化调整饮食结构。",
+                        }
+                    ]
+                    if foods or legacy_summary
+                    else [],
+                    "total_calories": 0,
+                    "notes": legacy_notes or legacy_summary,
+                }
+                return DietRecommendationContent.model_validate(normalized)
+
+        return DietRecommendationContent(meals=[], total_calories=0, notes="")
 
     def _build_push_body(self, patient_name: str, content: dict) -> str:
         meal_lines = []

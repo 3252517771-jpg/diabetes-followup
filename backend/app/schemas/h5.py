@@ -43,5 +43,14 @@ class H5TaskItem(BaseModel):
     description: str
 
 
+class H5NotificationItemRead(BaseModel):
+    id: int
+    status: str
+    channel: str
+    content: str
+    sent_at: str
+    fail_reason: str | None = None
+
+
 class H5RecentGlucoseRecordRead(BloodGlucoseRecordRead):
     editable: bool = True
