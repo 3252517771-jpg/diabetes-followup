@@ -47,7 +47,7 @@ export function LoginPage() {
               医护登录
             </Typography.Title>
             <Typography.Paragraph className="login-subtitle">
-              当前版本默认提供医生账号 `doctor01 / secret123` 与管理员账号 `admin01 / secret123`。
+              请输入已分配的正式账号信息登录系统。
             </Typography.Paragraph>
           </div>
 
@@ -57,25 +57,24 @@ export function LoginPage() {
 
           {error ? <Alert type="error" message={error} showIcon closable /> : null}
 
-          <Form
-            layout="vertical"
-            size="large"
-            onFinish={handleFinish}
-            initialValues={{ username: 'doctor01', password: 'secret123' }}
-          >
+          <Form layout="vertical" size="large" onFinish={handleFinish}>
             <Form.Item
               label="用户名"
               name="username"
               rules={[{ required: true, message: '请输入用户名' }]}
             >
-              <Input prefix={<UserOutlined />} placeholder="请输入用户名" />
+              <Input prefix={<UserOutlined />} placeholder="请输入用户名" autoComplete="username" />
             </Form.Item>
             <Form.Item
               label="密码"
               name="password"
               rules={[{ required: true, message: '请输入密码' }]}
             >
-              <Input.Password prefix={<LockOutlined />} placeholder="请输入密码" />
+              <Input.Password
+                prefix={<LockOutlined />}
+                placeholder="请输入密码"
+                autoComplete="current-password"
+              />
             </Form.Item>
             <Button type="primary" htmlType="submit" block loading={submitting}>
               登录系统

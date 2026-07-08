@@ -68,7 +68,8 @@ async def ensure_dev_user() -> None:
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    await ensure_dev_user()
+    if settings.seed_default_users:
+        await ensure_dev_user()
     reminder_scheduler.start()
     yield
     reminder_scheduler.shutdown()
