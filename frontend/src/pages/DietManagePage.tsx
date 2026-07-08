@@ -22,6 +22,7 @@ import { PlusOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
 import { useSearchParams } from 'react-router-dom'
 
+import { QueryStateAlert } from '../components/QueryStateAlert'
 import { AnimatedTitle } from '../components/reactbits/AnimatedTitle'
 import { EmptyMotion } from '../components/reactbits/EmptyMotion'
 import {
@@ -238,6 +239,17 @@ export function DietManagePage() {
       </Row>
 
       <Card className="panel-card">
+        {recommendationsQuery.isError || patientsQuery.isError ? (
+          <QueryStateAlert
+            title="饮食推荐数据加载失败"
+            description={recommendationsQuery.error?.message ?? patientsQuery.error?.message ?? '请稍后重试'}
+            onRetry={() => {
+              void recommendationsQuery.refetch()
+              void patientsQuery.refetch()
+            }}
+          />
+        ) : null}
+
         <div className="diet-filter-row">
           <Space wrap>
             <Select
@@ -264,7 +276,7 @@ export function DietManagePage() {
           </Space>
         </div>
 
-        {items.length ? (
+        {!recommendationsQuery.isError && items.length ? (
           <Table
             rowKey="id"
             columns={columns}
@@ -272,9 +284,9 @@ export function DietManagePage() {
             loading={recommendationsQuery.isLoading}
             pagination={false}
           />
-        ) : (
+        ) : !recommendationsQuery.isError ? (
           <EmptyMotion description={recommendationsQuery.isLoading ? '推荐加载中' : '当前筛选下暂无推荐'} />
-        )}
+        ) : null}
       </Card>
 
       <Modal
@@ -319,7 +331,13 @@ export function DietManagePage() {
           setReviewComment('')
         }}
       >
-        {detailQuery.data ? (
+        {detailQuery.isError ? (
+          <QueryStateAlert
+            title="推荐详情加载失败"
+            description={detailQuery.error.message}
+            onRetry={() => void detailQuery.refetch()}
+          />
+        ) : detailQuery.data ? (
           <Space direction="vertical" size={16} style={{ width: '100%' }}>
             <Space wrap>
               <Tag color={reviewStatusColor[detailQuery.data.review_status]}>

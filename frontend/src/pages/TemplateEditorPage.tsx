@@ -3,6 +3,7 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { App, Card, Typography } from 'antd'
 import { useNavigate, useParams } from 'react-router-dom'
 
+import { QueryStateAlert } from '../components/QueryStateAlert'
 import { AnimatedTitle } from '../components/reactbits/AnimatedTitle'
 import { ROUTE_PATHS } from '../config/routes'
 import { FollowupTemplateForm } from '../features/followup/FollowupTemplateForm'
@@ -116,6 +117,14 @@ export function TemplateEditorPage() {
 
       {templateQuery.isLoading ? (
         <Card loading className="panel-card" />
+      ) : templateQuery.isError ? (
+        <Card className="panel-card">
+          <QueryStateAlert
+            title="模板详情加载失败"
+            description={templateQuery.error.message}
+            onRetry={() => void templateQuery.refetch()}
+          />
+        </Card>
       ) : (
         <FollowupTemplateForm
           key={templateQuery.data?.id ?? 'create'}

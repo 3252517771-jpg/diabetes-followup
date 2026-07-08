@@ -17,6 +17,7 @@ import type { TablePaginationConfig } from 'antd'
 import { PlusOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 
+import { QueryStateAlert } from '../components/QueryStateAlert'
 import { ROUTE_PATHS } from '../config/routes'
 import { PatientTagManager } from '../features/patients/PatientTagManager'
 import { PatientStatusTag } from '../features/patients/PatientStatusTag'
@@ -200,6 +201,14 @@ export function PatientListPage() {
       </Flex>
 
       <Card className="panel-card">
+        {patientQuery.isError ? (
+          <QueryStateAlert
+            title="患者列表加载失败"
+            description={patientQuery.error.message}
+            onRetry={() => void patientQuery.refetch()}
+          />
+        ) : null}
+
         <div className="patient-filter-grid">
           <Input.Search
             allowClear
@@ -250,7 +259,10 @@ export function PatientListPage() {
 
         <div className="quick-tag-row">
           <Typography.Text className="quick-tag-label">标签快速筛选</Typography.Text>
-          <Space wrap>
+          {tagQuery.isError ? (
+            <Typography.Text type="danger">{tagQuery.error.message}</Typography.Text>
+          ) : (
+            <Space wrap>
             {tagQuery.data?.map((tag) => {
               const active = filters.tag === tag.id
               return (
@@ -266,7 +278,8 @@ export function PatientListPage() {
                 </Tag.CheckableTag>
               )
             })}
-          </Space>
+            </Space>
+          )}
         </div>
 
         <Table
@@ -281,6 +294,7 @@ export function PatientListPage() {
             showSizeChanger: true,
           }}
           onChange={handleTableChange}
+          locale={{ emptyText: patientQuery.isLoading ? '加载中...' : '暂无患者数据' }}
         />
       </Card>
 

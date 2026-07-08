@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { Card, Col, Progress, Row, Space, Statistic, Typography } from 'antd'
 
+import { QueryStateAlert } from '../components/QueryStateAlert'
 import { AnimatedTitle } from '../components/reactbits/AnimatedTitle'
 import { EmptyMotion } from '../components/reactbits/EmptyMotion'
 import { DashboardPendingChart } from '../features/dashboard/DashboardPendingChart'
@@ -61,6 +62,25 @@ export function DashboardPage() {
           仅展示当前账号可管辖患者的聚合指标，不下钻到单患者趋势。
         </Typography.Paragraph>
       </div>
+
+      {statsQuery.isError || trendQuery.isError || distributionQuery.isError ? (
+        <Card className="panel-card">
+          <QueryStateAlert
+            title="工作台数据暂时不可用"
+            description={
+              statsQuery.error?.message ??
+              trendQuery.error?.message ??
+              distributionQuery.error?.message ??
+              '请稍后重试'
+            }
+            onRetry={() => {
+              void statsQuery.refetch()
+              void trendQuery.refetch()
+              void distributionQuery.refetch()
+            }}
+          />
+        </Card>
+      ) : null}
 
       <Row gutter={[16, 16]}>
         <Col span={6}>

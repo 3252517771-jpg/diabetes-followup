@@ -24,6 +24,7 @@ export function NotificationListPage() {
     }
 
     async function bootstrap() {
+      setError(null)
       try {
         const [patientResponse, notificationsResponse] = await Promise.all([
           fetchPatientInfo(token),
@@ -59,6 +60,11 @@ export function NotificationListPage() {
       <section className="h5-card">
         <h2>消息列表</h2>
         {error ? <p className="h5-error">{error}</p> : null}
+        {error ? (
+          <button type="button" onClick={() => window.location.reload()} disabled={loading}>
+            重新加载
+          </button>
+        ) : null}
         {!loading && !items.length && !error ? <p className="h5-muted">暂无通知。</p> : null}
         <div className="h5-notification-list">
           {items.map((item) => (

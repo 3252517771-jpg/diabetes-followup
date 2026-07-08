@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Card, Col, Empty, Progress, Row, Space, Statistic, Table, Tag, Typography } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 
+import { QueryStateAlert } from '../components/QueryStateAlert'
 import { DailyRecordChart } from '../features/glucose/DailyRecordChart'
 import {
   GLUCOSE_CATEGORY_OPTIONS,
@@ -60,6 +61,16 @@ export function GlucoseOverviewPage() {
         </Typography.Paragraph>
       </div>
 
+      {overviewQuery.isError ? (
+        <Card className="panel-card">
+          <QueryStateAlert
+            title="血糖总览加载失败"
+            description={overviewQuery.error.message}
+            onRetry={() => void overviewQuery.refetch()}
+          />
+        </Card>
+      ) : null}
+
       <Row gutter={[16, 16]}>
         <Col span={6}>
           <Card className="metric-card" loading={overviewQuery.isLoading}>
@@ -86,7 +97,11 @@ export function GlucoseOverviewPage() {
       <Row gutter={[16, 16]}>
         <Col span={15}>
           <Card className="panel-card" title="每日记录量" loading={overviewQuery.isLoading}>
-            {overview ? <DailyRecordChart items={overview.daily_record_counts} /> : <Empty />}
+            {overview?.daily_record_counts.length ? (
+              <DailyRecordChart items={overview.daily_record_counts} />
+            ) : (
+              <Empty description="最近 7 天暂无血糖记录量数据" />
+            )}
           </Card>
         </Col>
         <Col span={9}>

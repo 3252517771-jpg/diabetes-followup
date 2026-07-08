@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { App, Button, Card, Empty, Form, Input, Space, Typography } from 'antd'
 import { useEffect } from 'react'
 
+import { QueryStateAlert } from '../components/QueryStateAlert'
 import { useAuth } from '../hooks/useAuth'
 import { fetchSystemConfigs, updateSystemConfigs } from '../services/systemService'
 
@@ -70,7 +71,16 @@ export function SystemConfigPage() {
       </div>
 
       <Card className="panel-card" loading={configQuery.isLoading}>
+        {configQuery.isError ? (
+          <QueryStateAlert
+            title="系统配置加载失败"
+            description={configQuery.error.message}
+            onRetry={() => void configQuery.refetch()}
+          />
+        ) : null}
+
         <Form
+          disabled={configQuery.isError}
           form={form}
           layout="vertical"
           onFinish={async (values: { items: Array<{ config_key: string; config_value: string; description?: string }> }) => {

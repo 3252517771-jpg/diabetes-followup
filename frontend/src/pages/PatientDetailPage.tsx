@@ -15,6 +15,7 @@ import {
 } from 'antd'
 import { useNavigate, useParams } from 'react-router-dom'
 
+import { QueryStateAlert } from '../components/QueryStateAlert'
 import { PatientDietPanel } from '../features/diet/PatientDietPanel'
 import { FollowupPlanPanel } from '../features/followup/FollowupPlanPanel'
 import { PatientGlucosePanel } from '../features/glucose/PatientGlucosePanel'
@@ -62,6 +63,18 @@ export function PatientDetailPage() {
 
   if (detailQuery.isLoading) {
     return <Card loading className="panel-card" />
+  }
+
+  if (detailQuery.isError) {
+    return (
+      <Card className="panel-card">
+        <QueryStateAlert
+          title="患者详情加载失败"
+          description={detailQuery.error.message}
+          onRetry={() => void detailQuery.refetch()}
+        />
+      </Card>
+    )
   }
 
   if (!detailQuery.data) {

@@ -37,6 +37,7 @@ export function GlucoseEntryPage() {
     }
 
     async function bootstrap() {
+      setError(null)
       try {
         const [patientResponse, taskResponse] = await Promise.all([
           fetchPatientInfo(token),
@@ -79,6 +80,8 @@ export function GlucoseEntryPage() {
           : '血糖记录已提交',
       )
       form.reset()
+      const taskResponse = await fetchPatientTasks(token)
+      setTasks(taskResponse.data ?? [])
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : '提交失败')
     } finally {
@@ -104,6 +107,21 @@ export function GlucoseEntryPage() {
           查看通知
         </Link>
       </section>
+
+      {error && !patient ? (
+        <section className="h5-card">
+          <p className="h5-error">{error}</p>
+          {token ? (
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              disabled={loading}
+            >
+              重新加载
+            </button>
+          ) : null}
+        </section>
+      ) : null}
 
       {tasks.length ? (
         <section className="h5-card">

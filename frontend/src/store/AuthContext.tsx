@@ -1,33 +1,20 @@
-import { createContext, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { PropsWithChildren } from 'react'
 
 import { login as loginRequest } from '../services/authService'
-import type { LoginResponse, UserInfo } from '../types/auth'
-
-interface AuthContextValue {
-  isAuthenticated: boolean
-  user: UserInfo | null
-  isLoading: boolean
-  login: (username: string, password: string) => Promise<void>
-  logout: () => void
-}
-
-export const AuthContext = createContext<AuthContextValue | undefined>(undefined)
-
-const USER_STORAGE_KEY = 'auth_user'
-const TOKEN_STORAGE_KEY = 'access_token'
+import { AuthContext } from './auth-state'
+import { clearSession, getStoredToken, getStoredUser, persistSession } from './authStorage'
 
 export function AuthProvider({ children }: PropsWithChildren) {
-  const [user, setUser] = useState<UserInfo | null>(null)
+  const [user, setUser] = useState(getStoredUser())
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const cachedUser = window.localStorage.getItem(USER_STORAGE_KEY)
-    const cachedToken = window.localStorage.getItem(TOKEN_STORAGE_KEY)
-
-    if (cachedUser && cachedToken) {
-      setUser(JSON.parse(cachedUser) as UserInfo)
+    if (!getStoredToken()) {
+      clearSession()
+      setUser(null)
     }
+
     setIsLoading(false)
   }, [])
 
@@ -40,15 +27,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
   }
 
   function logout() {
-    window.localStorage.removeItem(USER_STORAGE_KEY)
-    window.localStorage.removeItem(TOKEN_STORAGE_KEY)
+    clearSession()
     setUser(null)
-  }
-
-  function persistSession(session: LoginResponse) {
-    window.localStorage.setItem(TOKEN_STORAGE_KEY, session.access_token)
-    window.localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(session.user))
-    setUser(session.user)
   }
 
   return (

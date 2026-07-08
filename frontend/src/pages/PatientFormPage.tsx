@@ -15,6 +15,7 @@ import {
 } from 'antd'
 import { useNavigate, useParams } from 'react-router-dom'
 
+import { QueryStateAlert } from '../components/QueryStateAlert'
 import { ROUTE_PATHS } from '../config/routes'
 import {
   diagnosisTypeOptions,
@@ -136,6 +137,19 @@ export function PatientFormPage() {
 
       <Card className="panel-card">
         <Space direction="vertical" size={16} style={{ width: "100%" }}>
+          {tagQuery.isError || detailQuery.isError ? (
+            <QueryStateAlert
+              title={isEdit ? '患者表单初始化失败' : '标签加载失败'}
+              description={detailQuery.error?.message ?? tagQuery.error?.message ?? '请稍后重试'}
+              onRetry={() => {
+                void tagQuery.refetch()
+                if (isEdit) {
+                  void detailQuery.refetch()
+                }
+              }}
+            />
+          ) : null}
+
           <Alert
             type="info"
             showIcon
@@ -210,10 +224,11 @@ export function PatientFormPage() {
                 <Button
                   type="primary"
                   htmlType="submit"
-                  loading={saveMutation.isPending || detailQuery.isLoading}
-                >
-                  保存
-                </Button>
+                loading={saveMutation.isPending || detailQuery.isLoading}
+                disabled={tagQuery.isError || detailQuery.isError}
+              >
+                保存
+              </Button>
               </Space>
             </Form.Item>
           </Form>

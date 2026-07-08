@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { App, Button, Card, Empty, Input, Select, Space, Table, Tag, Typography } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 
+import { QueryStateAlert } from '../components/QueryStateAlert'
 import { EmptyMotion } from '../components/reactbits/EmptyMotion'
 import { useAuth } from '../hooks/useAuth'
 import {
@@ -137,6 +138,14 @@ export function SystemUsersPage() {
       </div>
 
       <Card className="panel-card">
+        {usersQuery.isError ? (
+          <QueryStateAlert
+            title="用户列表加载失败"
+            description={usersQuery.error.message}
+            onRetry={() => void usersQuery.refetch()}
+          />
+        ) : null}
+
         <div className="system-filter-row">
           <Input
             placeholder="按科室筛选"
@@ -177,7 +186,9 @@ export function SystemUsersPage() {
           columns={columns}
           dataSource={usersQuery.data?.items ?? []}
           pagination={false}
-          locale={{ emptyText: <EmptyMotion description="暂无系统用户数据" /> }}
+          locale={{
+            emptyText: usersQuery.isLoading ? '加载中...' : <EmptyMotion description="暂无系统用户数据" />,
+          }}
         />
       </Card>
 

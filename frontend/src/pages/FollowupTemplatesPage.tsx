@@ -4,6 +4,7 @@ import { App, Button, Card, Input, Segmented, Space, Tag, Typography } from 'ant
 import { CopyOutlined, DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 
+import { QueryStateAlert } from '../components/QueryStateAlert'
 import { AnimatedTitle } from '../components/reactbits/AnimatedTitle'
 import { EmptyMotion } from '../components/reactbits/EmptyMotion'
 import { ROUTE_PATHS } from '../config/routes'
@@ -79,6 +80,14 @@ export function FollowupTemplatesPage() {
       </div>
 
       <Card className="panel-card">
+        {templateQuery.isError ? (
+          <QueryStateAlert
+            title="模板列表加载失败"
+            description={templateQuery.error.message}
+            onRetry={() => void templateQuery.refetch()}
+          />
+        ) : null}
+
         <div className="followup-filter-row">
           <Segmented
             value={scope}
@@ -96,7 +105,7 @@ export function FollowupTemplatesPage() {
           />
         </div>
 
-        {templateQuery.data?.items.length ? (
+        {!templateQuery.isError && templateQuery.data?.items.length ? (
           <div className="template-grid">
             {templateQuery.data.items.map((template) => (
               <Card key={template.id} className="template-card">
@@ -145,9 +154,9 @@ export function FollowupTemplatesPage() {
               </Card>
             ))}
           </div>
-        ) : (
+        ) : !templateQuery.isError ? (
           <EmptyMotion description={templateQuery.isLoading ? '模板加载中' : '暂无随访模板'} />
-        )}
+        ) : null}
       </Card>
     </div>
   )

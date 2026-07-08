@@ -16,6 +16,7 @@ import {
 import { BellOutlined, CheckOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 
+import { QueryStateAlert } from '../components/QueryStateAlert'
 import { EmptyMotion } from '../components/reactbits/EmptyMotion'
 import {
   fetchNotifications,
@@ -126,7 +127,22 @@ export function NotificationPage() {
           <Typography.Text type="secondary">当前列表未读 {unreadItems} 条</Typography.Text>
         </div>
 
-        {items.length ? (
+        {notificationsQuery.isError || unreadCountQuery.isError ? (
+          <QueryStateAlert
+            title="消息中心加载失败"
+            description={
+              notificationsQuery.error?.message ??
+              unreadCountQuery.error?.message ??
+              '请稍后重试'
+            }
+            onRetry={() => {
+              void notificationsQuery.refetch()
+              void unreadCountQuery.refetch()
+            }}
+          />
+        ) : null}
+
+        {!notificationsQuery.isError && items.length ? (
           <List
             dataSource={items}
             renderItem={(item) => (
@@ -161,9 +177,9 @@ export function NotificationPage() {
             )}
             locale={{ emptyText: <Empty description="暂无消息" /> }}
           />
-        ) : (
+        ) : !notificationsQuery.isError ? (
           <EmptyMotion description={notificationsQuery.isLoading ? '消息加载中' : '当前分类暂无消息'} />
-        )}
+        ) : null}
       </Card>
 
       <Drawer
