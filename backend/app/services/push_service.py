@@ -6,13 +6,16 @@ class PushService:
         if not send_key:
             return False, "Missing ServerChan send key"
 
-        async with httpx.AsyncClient(timeout=15.0) as client:
-            response = await client.post(
-                f"https://sctapi.ftqq.com/{send_key}.send",
-                data={"title": title, "desp": body},
-            )
-            response.raise_for_status()
-            payload = response.json()
+        try:
+            async with httpx.AsyncClient(timeout=15.0) as client:
+                response = await client.post(
+                    f"https://sctapi.ftqq.com/{send_key}.send",
+                    data={"title": title, "desp": body},
+                )
+                response.raise_for_status()
+                payload = response.json()
+        except httpx.HTTPError as error:
+            return False, str(error)
 
         code = payload.get("code")
         if code == 0:

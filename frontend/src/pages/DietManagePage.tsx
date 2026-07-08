@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   App,
@@ -22,8 +22,9 @@ import { PlusOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
 import { useSearchParams } from 'react-router-dom'
 
+import { PageIntro } from '../components/PageIntro'
 import { QueryStateAlert } from '../components/QueryStateAlert'
-import { AnimatedTitle } from '../components/reactbits/AnimatedTitle'
+import { ScrollStack, ScrollStackItem } from '../components/reactbits/ScrollStack'
 import { EmptyMotion } from '../components/reactbits/EmptyMotion'
 import {
   approveDietRecommendation,
@@ -51,6 +52,18 @@ const reviewStatusLabel = {
   pending: '待审核',
   approved: '已通过',
   rejected: '已驳回',
+} as const
+
+const pushStatusColor = {
+  unpushed: 'default',
+  pushed: 'blue',
+  failed: 'red',
+} as const
+
+const pushStatusLabel = {
+  unpushed: '未推送',
+  pushed: '已推送',
+  failed: '推送失败',
 } as const
 
 export function DietManagePage() {
@@ -175,17 +188,17 @@ export function DietManagePage() {
       render: (_, record) => `${record.content.total_calories} kcal`,
     },
     {
-      title: '状态',
+      title: '审核状态',
       dataIndex: 'review_status',
       render: (value: DietRecommendation['review_status']) => (
         <Tag color={reviewStatusColor[value]}>{reviewStatusLabel[value]}</Tag>
       ),
     },
     {
-      title: '推送',
+      title: '推送状态',
       dataIndex: 'push_status',
       render: (value: DietRecommendation['push_status']) => (
-        <Tag color={value === 'pushed' ? 'blue' : value === 'failed' ? 'red' : 'default'}>{value}</Tag>
+        <Tag color={pushStatusColor[value]}>{pushStatusLabel[value]}</Tag>
       ),
     },
     {
@@ -198,22 +211,164 @@ export function DietManagePage() {
     },
   ]
 
+  const detail = detailQuery.data
+
+  const reviewLayers = useMemo(() => {
+    if (!detail) {
+      return []
+    }
+
+    return [
+      {
+        key: 'overview',
+        title: '患者与推荐概览',
+        content: (
+          <Card
+            size="small"
+            className="panel-card diet-review-card"
+            title="患者与推荐概览"
+          >
+            <Space direction="vertical" size={12} style={{ width: '100%' }}>
+              <Space wrap>
+                <Tag color={reviewStatusColor[detail.review_status]}>
+                  {reviewStatusLabel[detail.review_status]}
+                </Tag>
+                <Tag color={pushStatusColor[detail.push_status]}>
+                  {pushStatusLabel[detail.push_status]}
+                </Tag>
+              </Space>
+              <div className="diet-review-summary-list">
+                <div className="diet-review-summary-item">
+                  <span className="diet-review-summary-item__label">患者</span>
+                  <strong className="diet-review-summary-item__value">{detail.patient_name ?? '--'}</strong>
+                </div>
+                <div className="diet-review-summary-item">
+                  <span className="diet-review-summary-item__label">生成方式</span>
+                  <strong className="diet-review-summary-item__value">{detail.generate_method}</strong>
+                </div>
+                <div className="diet-review-summary-item">
+                  <span className="diet-review-summary-item__label">创建时间</span>
+                  <strong className="diet-review-summary-item__value">
+                    {detail.created_at.replace('T', ' ').slice(0, 16)}
+                  </strong>
+                </div>
+              </div>
+            </Space>
+          </Card>
+        ),
+      },
+      {
+        key: 'meals',
+        title: '餐次拆解',
+        content: (
+          <Card size="small" className="panel-card diet-review-card" title="餐次拆解">
+            <Space direction="vertical" size={14} style={{ width: '100%' }}>
+              {detail.content.meals.map((meal) => (
+                <div key={meal.meal_type} className="diet-review-meal">
+                  <div className="diet-review-meal__head">
+                    <Typography.Text strong>{meal.meal_type}</Typography.Text>
+                  </div>
+                  <Typography.Paragraph className="diet-review-meal__foods">
+                    {meal.foods.join('、')}
+                  </Typography.Paragraph>
+                  <Typography.Text type="secondary">{meal.tips}</Typography.Text>
+                </div>
+              ))}
+            </Space>
+          </Card>
+        ),
+      },
+      {
+        key: 'nutrition',
+        title: '营养摘要',
+        content: (
+          <Card size="small" className="panel-card diet-review-card" title="营养摘要">
+            <Space direction="vertical" size={12} style={{ width: '100%' }}>
+              <div className="diet-review-stat">
+                <span className="diet-review-stat__label">总热量</span>
+                <strong className="diet-review-stat__value">{detail.content.total_calories} kcal</strong>
+              </div>
+              <div className="diet-review-note">
+                <Typography.Text strong>备注</Typography.Text>
+                <Typography.Paragraph className="diet-review-note__text">
+                  {detail.content.notes || '暂无备注'}
+                </Typography.Paragraph>
+              </div>
+            </Space>
+          </Card>
+        ),
+      },
+      {
+        key: 'push',
+        title: '推送信息',
+        content: (
+          <Card size="small" className="panel-card diet-review-card" title="推送信息">
+            <div className="diet-review-summary-list">
+              <div className="diet-review-summary-item">
+                <span className="diet-review-summary-item__label">推送目标</span>
+                <strong className="diet-review-summary-item__value">{detail.push_target_label}</strong>
+              </div>
+              <div className="diet-review-summary-item">
+                <span className="diet-review-summary-item__label">推送状态</span>
+                <strong className="diet-review-summary-item__value">{pushStatusLabel[detail.push_status]}</strong>
+              </div>
+              <div className="diet-review-summary-item">
+                <span className="diet-review-summary-item__label">审核人</span>
+                <strong className="diet-review-summary-item__value">{detail.reviewer_name ?? '--'}</strong>
+              </div>
+            </div>
+          </Card>
+        ),
+      },
+      {
+        key: 'review',
+        title: '审核决策',
+        content: (
+          <Card size="small" className="panel-card diet-review-card" title="审核决策">
+            <Space direction="vertical" size={16} style={{ width: '100%' }}>
+              <Input.TextArea
+                rows={5}
+                value={reviewComment}
+                onChange={(event) => setReviewComment(event.target.value)}
+                placeholder="填写审核意见，可选"
+              />
+
+              {detail.review_status === 'pending' ? (
+                <Space>
+                  <Button
+                    danger
+                    onClick={() => rejectMutation.mutate(detail.id)}
+                    loading={rejectMutation.isPending}
+                  >
+                    驳回
+                  </Button>
+                  <Button
+                    type="primary"
+                    onClick={() => approveMutation.mutate(detail.id)}
+                    loading={approveMutation.isPending}
+                  >
+                    通过并推送
+                  </Button>
+                </Space>
+              ) : (
+                <Typography.Text type="secondary">
+                  当前推荐已完成审核，若需重新生成，请返回列表新建推荐。
+                </Typography.Text>
+              )}
+            </Space>
+          </Card>
+        ),
+      },
+    ]
+  }, [approveMutation, detail, rejectMutation, reviewComment])
+
   return (
-    <div className="page-shell">
-      <div className="page-toolbar followup-toolbar">
-        <div>
-          <Typography.Text className="dashboard-kicker">Diet</Typography.Text>
-          <Typography.Title level={2} className="panel-title">
-            <AnimatedTitle>饮食推荐管理</AnimatedTitle>
-          </Typography.Title>
-          <Typography.Paragraph className="panel-subtitle">
-            直接调用 FastAPI 与 DeepSeek 生成推荐，审核通过后同步触发患者推送与消息回流。
-          </Typography.Paragraph>
-        </div>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => setGenerateOpen(true)}>
-          新建推荐
-        </Button>
-      </div>
+    <div className="page-shell page-shell--dashboard">
+      <PageIntro
+        kicker="Diet"
+        title="饮食推荐管理"
+        description="直接调用真实 FastAPI 与 DeepSeek 推荐链路。列表保持克制，审核详情升级为分层审阅结构。"
+      />
 
       <Row gutter={[16, 16]}>
         <Col span={6}>
@@ -242,7 +397,11 @@ export function DietManagePage() {
         {recommendationsQuery.isError || patientsQuery.isError ? (
           <QueryStateAlert
             title="饮食推荐数据加载失败"
-            description={recommendationsQuery.error?.message ?? patientsQuery.error?.message ?? '请稍后重试'}
+            description={
+              recommendationsQuery.error?.message ??
+              patientsQuery.error?.message ??
+              '请稍后重试'
+            }
             onRetry={() => {
               void recommendationsQuery.refetch()
               void patientsQuery.refetch()
@@ -274,6 +433,10 @@ export function DietManagePage() {
               onChange={(value) => setPatientFilter(value)}
             />
           </Space>
+
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => setGenerateOpen(true)}>
+            新建推荐
+          </Button>
         </div>
 
         {!recommendationsQuery.isError && items.length ? (
@@ -285,7 +448,9 @@ export function DietManagePage() {
             pagination={false}
           />
         ) : !recommendationsQuery.isError ? (
-          <EmptyMotion description={recommendationsQuery.isLoading ? '推荐加载中' : '当前筛选下暂无推荐'} />
+          <EmptyMotion
+            description={recommendationsQuery.isLoading ? '推荐加载中' : '当前筛选下暂无推荐'}
+          />
         ) : null}
       </Card>
 
@@ -303,7 +468,11 @@ export function DietManagePage() {
           initialValues={{ patient_id: patientFilter }}
           onFinish={(values) => generateMutation.mutate(values)}
         >
-          <Form.Item label="患者" name="patient_id" rules={[{ required: true, message: '请选择患者' }]}>
+          <Form.Item
+            label="患者"
+            name="patient_id"
+            rules={[{ required: true, message: '请选择患者' }]}
+          >
             <Select
               showSearch
               optionFilterProp="label"
@@ -325,7 +494,7 @@ export function DietManagePage() {
       <Drawer
         title="推荐审核"
         open={selectedRecommendationId !== null}
-        width={560}
+        width={640}
         onClose={() => {
           setSelectedRecommendationId(null)
           setReviewComment('')
@@ -337,80 +506,16 @@ export function DietManagePage() {
             description={detailQuery.error.message}
             onRetry={() => void detailQuery.refetch()}
           />
-        ) : detailQuery.data ? (
-          <Space direction="vertical" size={16} style={{ width: '100%' }}>
-            <Space wrap>
-              <Tag color={reviewStatusColor[detailQuery.data.review_status]}>
-                {reviewStatusLabel[detailQuery.data.review_status]}
-              </Tag>
-              <Tag>{detailQuery.data.push_status}</Tag>
-              <Typography.Text type="secondary">
-                {detailQuery.data.patient_name}
-              </Typography.Text>
-            </Space>
-
-            <Card size="small" className="panel-card">
-              <Space direction="vertical" size={12} style={{ width: '100%' }}>
-                {detailQuery.data.content.meals.map((meal) => (
-                  <div key={meal.meal_type}>
-                    <Typography.Text strong>{meal.meal_type}</Typography.Text>
-                    <Typography.Paragraph style={{ margin: '6px 0 4px' }}>
-                      {meal.foods.join('、')}
-                    </Typography.Paragraph>
-                    <Typography.Text type="secondary">{meal.tips}</Typography.Text>
-                  </div>
-                ))}
-              </Space>
-            </Card>
-
-            <Card size="small" className="panel-card">
-              <Space direction="vertical" size={8}>
-                <Typography.Text strong>
-                  总热量 {detailQuery.data.content.total_calories} kcal
-                </Typography.Text>
-                <Typography.Paragraph style={{ marginBottom: 0 }}>
-                  {detailQuery.data.content.notes || '暂无备注'}
-                </Typography.Paragraph>
-                <Typography.Text type="secondary">
-                  推送目标：{detailQuery.data.push_target_label}
-                </Typography.Text>
-                <Typography.Text type="secondary">
-                  当前推送状态：{detailQuery.data.push_status}
-                </Typography.Text>
-                {detailQuery.data.reviewer_name ? (
-                  <Typography.Text type="secondary">
-                    审核人：{detailQuery.data.reviewer_name}
-                  </Typography.Text>
-                ) : null}
-              </Space>
-            </Card>
-
-            <Input.TextArea
-              rows={4}
-              value={reviewComment}
-              onChange={(event) => setReviewComment(event.target.value)}
-              placeholder="填写审核意见，可选"
-            />
-
-            {detailQuery.data.review_status === 'pending' ? (
-              <Space>
-                <Button
-                  danger
-                  onClick={() => rejectMutation.mutate(detailQuery.data?.id ?? 0)}
-                  loading={rejectMutation.isPending}
-                >
-                  驳回
-                </Button>
-                <Button
-                  type="primary"
-                  onClick={() => approveMutation.mutate(detailQuery.data?.id ?? 0)}
-                  loading={approveMutation.isPending}
-                >
-                  通过并推送
-                </Button>
-              </Space>
-            ) : null}
-          </Space>
+        ) : detail ? (
+          <div className="diet-review-scroll">
+            <ScrollStack measureSelector=".diet-review-card">
+              {reviewLayers.map((layer, index) => (
+                <ScrollStackItem key={layer.key} index={index} className="diet-review-stack-item">
+                  <div className="diet-review-stage">{layer.content}</div>
+                </ScrollStackItem>
+              ))}
+            </ScrollStack>
+          </div>
         ) : (
           <EmptyMotion description={detailQuery.isLoading ? '详情加载中' : '未找到推荐详情'} />
         )}

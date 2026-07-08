@@ -3,6 +3,7 @@ import type { CSSProperties, PropsWithChildren } from 'react'
 
 interface ScrollStackProps extends PropsWithChildren {
   className?: string
+  measureSelector?: string
 }
 
 interface ScrollStackItemProps extends PropsWithChildren {
@@ -10,7 +11,11 @@ interface ScrollStackItemProps extends PropsWithChildren {
   className?: string
 }
 
-export function ScrollStack({ children, className }: ScrollStackProps) {
+export function ScrollStack({
+  children,
+  className,
+  measureSelector = '.patient-section-card',
+}: ScrollStackProps) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const [stageHeight, setStageHeight] = useState<number>()
 
@@ -21,9 +26,7 @@ export function ScrollStack({ children, className }: ScrollStackProps) {
     }
 
     const calculateHeight = () => {
-      const cards = Array.from(
-        container.querySelectorAll<HTMLElement>('.patient-section-card'),
-      )
+      const cards = Array.from(container.querySelectorAll<HTMLElement>(measureSelector))
 
       if (!cards.length) {
         return
@@ -42,7 +45,7 @@ export function ScrollStack({ children, className }: ScrollStackProps) {
       calculateHeight()
     })
 
-    const cards = container.querySelectorAll<HTMLElement>('.patient-section-card')
+    const cards = container.querySelectorAll<HTMLElement>(measureSelector)
     cards.forEach((card) => resizeObserver.observe(card))
     window.addEventListener('resize', calculateHeight)
 
@@ -50,7 +53,7 @@ export function ScrollStack({ children, className }: ScrollStackProps) {
       resizeObserver.disconnect()
       window.removeEventListener('resize', calculateHeight)
     }
-  }, [children])
+  }, [children, measureSelector])
 
   return (
     <div
