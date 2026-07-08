@@ -38,16 +38,17 @@ body {
   min-height: 100vh;
   display: grid;
   place-items: center;
-  padding: 32px 16px;
+  padding: 32px 20px;
 }
 
 .auth-panel {
-  width: min(100%, 440px);
+  width: min(100%, 760px);
 }
 
-.login-card {
-  border-color: #e5e5e5;
-  border-radius: 12px;
+.login-shell {
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 .login-card__head {
@@ -77,6 +78,13 @@ body {
   margin-top: 8px;
   margin-bottom: 0 !important;
   color: #525252;
+}
+
+.login-caption {
+  margin: 0 0 18px !important;
+  color: #737373;
+  font-size: 13px;
+  letter-spacing: 0.02em;
 }
 
 .app-layout {
@@ -452,5 +460,16 @@ body {
   .reactbits-title,
   .reactbits-empty__pulse {
     animation: none;
+  }
+}
+
+@media (max-width: 980px) {
+  .auth-panel {
+    width: min(100%, 520px);
+  }
+
+  .login-shell .profile-card {
+    min-height: auto;
+    padding: 24px;
   }
 }

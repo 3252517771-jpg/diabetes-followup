@@ -24,6 +24,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       throw new Error(response.message || '登录失败')
     }
     persistSession(response.data)
+    setUser(response.data.user)
   }
 
   function logout() {
