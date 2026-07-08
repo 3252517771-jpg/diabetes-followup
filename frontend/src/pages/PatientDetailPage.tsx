@@ -1,21 +1,21 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 import {
   App,
+  Avatar,
   Button,
   Card,
-  Col,
   Descriptions,
   Empty,
-  Row,
   Space,
-  Statistic,
-  Tabs,
   Tag,
   Typography,
 } from 'antd'
+import { LinkOutlined, UserOutlined } from '@ant-design/icons'
 import { useNavigate, useParams } from 'react-router-dom'
 
+import { PageIntro } from '../components/PageIntro'
 import { QueryStateAlert } from '../components/QueryStateAlert'
+import { ScrollStack, ScrollStackItem } from '../components/reactbits/ScrollStack'
 import { PatientDietPanel } from '../features/diet/PatientDietPanel'
 import { FollowupPlanPanel } from '../features/followup/FollowupPlanPanel'
 import { PatientGlucosePanel } from '../features/glucose/PatientGlucosePanel'
@@ -26,6 +26,24 @@ import {
   getSeverityLabel,
 } from '../features/patients/patientOptions'
 import { fetchPatientDetail, fetchPatientH5Access } from '../services/patientService'
+
+function getPatientAvatarText(name: string) {
+  const compactName = name.trim()
+  if (!compactName) {
+    return '患'
+  }
+
+  if (/[\u4e00-\u9fa5]/.test(compactName)) {
+    return compactName.slice(0, Math.min(2, compactName.length))
+  }
+
+  const segments = compactName.split(/\s+/).filter(Boolean)
+  if (segments.length === 1) {
+    return segments[0].slice(0, 2).toUpperCase()
+  }
+
+  return `${segments[0][0] ?? ''}${segments[1][0] ?? ''}`.toUpperCase()
+}
 
 export function PatientDetailPage() {
   const navigate = useNavigate()
@@ -86,134 +104,162 @@ export function PatientDetailPage() {
   }
 
   const patient = detailQuery.data
+  const patientAvatar = getPatientAvatarText(patient.name)
 
   return (
-    <div className="page-shell">
-      <div className="page-toolbar">
-        <Typography.Text className="dashboard-kicker">Patients</Typography.Text>
-        <Typography.Title level={2} className="panel-title">
-          {patient.name}
-        </Typography.Title>
-        <Typography.Paragraph className="panel-subtitle">
-          患者档案、血糖、随访与饮食推荐均来自真实 FastAPI 接口。
-        </Typography.Paragraph>
-      </div>
+    <div className="page-shell page-shell--patient-detail">
+      <PageIntro
+        kicker="Patients"
+        title={patient.name}
+        description="患者档案、血糖、随访与饮食推荐均来自真实 FastAPI 接口。"
+      />
 
-      <Row gutter={[16, 16]}>
-        <Col span={7}>
-          <Card className="panel-card patient-profile-card">
-            <Space direction="vertical" size={16} style={{ width: '100%' }}>
-              <div>
-                <Typography.Title level={3} className="patient-name">
-                  {patient.name}
-                </Typography.Title>
-                <Typography.Text type="secondary">
-                  {getGenderLabel(patient.gender)} / {patient.age ?? '--'} 岁
-                </Typography.Text>
-              </div>
+      <div className="patient-detail-layout">
+        <Card className="panel-card patient-hero-card">
+          <div className="patient-hero-card__top">
+            <Avatar
+              className="patient-hero-card__avatar"
+              size={88}
+              icon={!patientAvatar ? <UserOutlined /> : undefined}
+            >
+              {patientAvatar}
+            </Avatar>
+            <div className="patient-hero-card__identity">
+              <Typography.Text className="dashboard-kicker">Patient Profile</Typography.Text>
+              <Typography.Title level={2} className="patient-hero-card__name">
+                {patient.name}
+              </Typography.Title>
+              <Typography.Paragraph className="patient-hero-card__meta">
+                {getGenderLabel(patient.gender)} / {patient.age ?? '--'} 岁
+              </Typography.Paragraph>
+            </div>
+          </div>
 
-              <Space wrap>
-                <PatientStatusTag status={patient.status} />
-                {patient.tags.map((tag) => (
-                  <Tag key={tag.id} color={tag.color ?? 'default'}>
-                    {tag.name}
-                  </Tag>
-                ))}
-              </Space>
+          <div className="patient-hero-card__status">
+            <PatientStatusTag status={patient.status} />
+            <Tag className="patient-soft-tag">{getDiagnosisTypeLabel(patient.diagnosis_type)}</Tag>
+            <Tag className="patient-soft-tag">{getSeverityLabel(patient.severity)}</Tag>
+          </div>
 
-              <Descriptions column={1} size="small" className="patient-detail-descriptions">
-                <Descriptions.Item label="糖尿病类型">
-                  {getDiagnosisTypeLabel(patient.diagnosis_type)}
-                </Descriptions.Item>
-                <Descriptions.Item label="严重程度">
-                  {getSeverityLabel(patient.severity)}
-                </Descriptions.Item>
-                <Descriptions.Item label="手机号">{patient.phone ?? '--'}</Descriptions.Item>
-                <Descriptions.Item label="负责医生">
-                  {patient.responsible_doctor?.real_name ?? '--'}
-                </Descriptions.Item>
-                <Descriptions.Item label="科室">
-                  {patient.responsible_doctor?.department ?? '--'}
-                </Descriptions.Item>
-                <Descriptions.Item label="备注">{patient.notes ?? '暂无备注'}</Descriptions.Item>
-              </Descriptions>
+          <div className="patient-hero-card__tags">
+            {patient.tags.length ? (
+              patient.tags.map((tag) => (
+                <Tag key={tag.id} color={tag.color ?? 'default'}>
+                  {tag.name}
+                </Tag>
+              ))
+            ) : (
+              <Typography.Text type="secondary">暂无标签</Typography.Text>
+            )}
+          </div>
 
-              <Space direction="vertical" style={{ width: '100%' }}>
-                <Button type="primary" onClick={() => navigate(`/patients/${patient.id}/edit`)}>
-                  编辑患者
-                </Button>
-                <Button loading={h5AccessMutation.isPending} onClick={() => h5AccessMutation.mutate()}>
-                  打开患者 H5 入口
-                </Button>
-              </Space>
-            </Space>
-          </Card>
-        </Col>
+          <div className="patient-hero-card__summary">
+            <div className="patient-hero-card__summary-item">
+              <span className="patient-hero-card__summary-label">负责医生</span>
+              <strong className="patient-hero-card__summary-value">
+                {patient.responsible_doctor?.real_name ?? '--'}
+              </strong>
+            </div>
+            <div className="patient-hero-card__summary-item">
+              <span className="patient-hero-card__summary-label">所属科室</span>
+              <strong className="patient-hero-card__summary-value">
+                {patient.responsible_doctor?.department ?? '--'}
+              </strong>
+            </div>
+            <div className="patient-hero-card__summary-item">
+              <span className="patient-hero-card__summary-label">手机号</span>
+              <strong className="patient-hero-card__summary-value">{patient.phone ?? '--'}</strong>
+            </div>
+          </div>
 
-        <Col span={17}>
-          <Space direction="vertical" size={16} style={{ width: '100%' }}>
-            <Row gutter={[16, 16]}>
-              <Col span={8}>
-                <Card className="panel-card">
-                  <Statistic title="当前状态" value={patient.status} />
-                </Card>
-              </Col>
-              <Col span={8}>
-                <Card className="panel-card">
-                  <Statistic title="标签数量" value={patient.tags.length} />
-                </Card>
-              </Col>
-              <Col span={8}>
-                <Card className="panel-card">
-                  <Statistic title="最近更新" value={patient.updated_at.slice(0, 10)} />
-                </Card>
-              </Col>
-            </Row>
+          <Descriptions
+            column={1}
+            size="small"
+            className="patient-detail-descriptions patient-hero-card__descriptions"
+          >
+            <Descriptions.Item label="自动推送">
+              {patient.auto_push_enabled ? '已开启' : '未开启'}
+            </Descriptions.Item>
+            <Descriptions.Item label="备注">
+              {patient.notes?.trim() ? patient.notes : '暂无备注'}
+            </Descriptions.Item>
+          </Descriptions>
 
-            <Card className="panel-card">
-              <Tabs
-                items={[
-                  {
-                    key: 'archive',
-                    label: '档案',
-                    children: (
-                      <Descriptions column={2} bordered size="small">
-                        <Descriptions.Item label="姓名">{patient.name}</Descriptions.Item>
-                        <Descriptions.Item label="性别">
-                          {getGenderLabel(patient.gender)}
-                        </Descriptions.Item>
-                        <Descriptions.Item label="年龄">{patient.age ?? '--'}</Descriptions.Item>
-                        <Descriptions.Item label="手机号">{patient.phone ?? '--'}</Descriptions.Item>
-                        <Descriptions.Item label="糖尿病类型">
-                          {getDiagnosisTypeLabel(patient.diagnosis_type)}
-                        </Descriptions.Item>
-                        <Descriptions.Item label="严重程度">
-                          {getSeverityLabel(patient.severity)}
-                        </Descriptions.Item>
-                      </Descriptions>
-                    ),
-                  },
-                  {
-                    key: 'glucose',
-                    label: '血糖',
-                    children: <PatientGlucosePanel patientId={patient.id} />,
-                  },
-                  {
-                    key: 'followup',
-                    label: '随访计划',
-                    children: <FollowupPlanPanel patientId={patient.id} />,
-                  },
-                  {
-                    key: 'diet',
-                    label: '饮食推荐',
-                    children: <PatientDietPanel patientId={patient.id} />,
-                  },
-                ]}
-              />
-            </Card>
+          <Space direction="vertical" size={12} style={{ width: '100%' }}>
+            <Button type="primary" onClick={() => navigate(`/patients/${patient.id}/edit`)}>
+              编辑患者
+            </Button>
+            <Button
+              icon={<LinkOutlined />}
+              loading={h5AccessMutation.isPending}
+              onClick={() => h5AccessMutation.mutate()}
+            >
+              打开患者 H5 入口
+            </Button>
           </Space>
-        </Col>
-      </Row>
+        </Card>
+
+        <div className="patient-detail-sections-viewport">
+          <ScrollStack className="patient-detail-sections">
+            <ScrollStackItem index={0}>
+              <div className="patient-stack-stage">
+                <Card className="panel-card patient-section-card patient-section-card--followup">
+                  <div className="patient-section-card__header">
+                    <div>
+                      <Typography.Text className="dashboard-kicker">Followup</Typography.Text>
+                      <Typography.Title level={3} className="panel-title">
+                        随访计划
+                      </Typography.Title>
+                      <Typography.Paragraph className="panel-subtitle">
+                        先看计划与执行节奏，再进入血糖与饮食判断。
+                      </Typography.Paragraph>
+                    </div>
+                  </div>
+                  <FollowupPlanPanel patientId={patient.id} />
+                </Card>
+              </div>
+            </ScrollStackItem>
+
+            <ScrollStackItem index={1}>
+              <div className="patient-stack-stage">
+                <Card className="panel-card patient-section-card patient-section-card--glucose">
+                  <div className="patient-section-card__header">
+                    <div>
+                      <Typography.Text className="dashboard-kicker">Glucose</Typography.Text>
+                      <Typography.Title level={3} className="panel-title">
+                        血糖监测
+                      </Typography.Title>
+                      <Typography.Paragraph className="panel-subtitle">
+                        该区块承担主要摘要职责，优先用于趋势判断与异常识别。
+                      </Typography.Paragraph>
+                    </div>
+                  </div>
+                  <PatientGlucosePanel patientId={patient.id} />
+                </Card>
+              </div>
+            </ScrollStackItem>
+
+            <ScrollStackItem index={2}>
+              <div className="patient-stack-stage">
+                <Card className="panel-card patient-section-card patient-section-card--diet">
+                  <div className="patient-section-card__header">
+                    <div>
+                      <Typography.Text className="dashboard-kicker">Diet</Typography.Text>
+                      <Typography.Title level={3} className="panel-title">
+                        饮食推荐
+                      </Typography.Title>
+                      <Typography.Paragraph className="panel-subtitle">
+                        查看近期推荐、审核结果与推送状态，作为辅助决策补充。
+                      </Typography.Paragraph>
+                    </div>
+                  </div>
+                  <PatientDietPanel patientId={patient.id} />
+                </Card>
+              </div>
+            </ScrollStackItem>
+          </ScrollStack>
+        </div>
+      </div>
     </div>
   )
 }
