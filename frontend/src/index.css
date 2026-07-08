@@ -83,20 +83,34 @@ body {
   min-height: 100vh;
 }
 
-.app-sider {
-  border-right: 1px solid #e5e5e5;
-}
-
-.brand-block {
-  padding: 24px 20px 16px;
-}
-
 .app-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid #e5e5e5;
   padding: 0 24px !important;
+  background: rgba(250, 250, 250, 0.88) !important;
+  backdrop-filter: blur(16px);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.app-header__leading {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.app-header__title-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.app-header__title {
+  line-height: 1.1 !important;
 }
 
 .app-content {
@@ -143,6 +157,18 @@ body {
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+.page-intro {
+  min-width: 0;
+}
+
+.page-intro__title {
+  min-height: 40px;
+}
+
+.page-intro__extra {
+  flex: 0 0 auto;
 }
 
 .panel-card {

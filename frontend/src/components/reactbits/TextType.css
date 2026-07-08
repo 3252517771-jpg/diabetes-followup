@@ -1,0 +1,43 @@
+.text-type {
+  display: inline-flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.text-type__char {
+  opacity: 0;
+  transform: translateY(0.2em);
+  transition:
+    opacity 180ms ease,
+    transform 220ms ease;
+}
+
+.text-type__char.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.text-type__cursor {
+  display: inline-block;
+  margin-left: 2px;
+  color: #2563eb;
+  animation: text-type-blink 900ms step-end infinite;
+}
+
+.text-type__cursor.is-hidden {
+  opacity: 0;
+}
+
+@keyframes text-type-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .text-type__char,
+  .text-type__cursor {
+    animation: none;
+    transition: none;
+  }
+}

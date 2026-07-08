@@ -1,4 +1,4 @@
-import { Avatar, Button, Layout, Menu, Space, Typography } from 'antd'
+import { Avatar, Button, Layout, Space, Typography } from 'antd'
 import {
   DashboardOutlined,
   LineChartOutlined,
@@ -15,8 +15,21 @@ import { useLocation, useNavigate } from 'react-router-dom'
 
 import { ROUTE_PATHS } from '../../config/routes'
 import { useAuth } from '../../hooks/useAuth'
+import { StaggeredMenu } from '../reactbits/StaggeredMenu'
+import { TextType } from '../reactbits/TextType'
 
-const { Header, Sider, Content } = Layout
+const { Header, Content } = Layout
+
+const navigationMeta = {
+  dashboard: { kicker: 'Dashboard', title: '科室工作台' },
+  patients: { kicker: 'Patients', title: '患者管理' },
+  glucose: { kicker: 'Glucose', title: '血糖总览' },
+  followup: { kicker: 'Followup', title: '随访计划' },
+  diet: { kicker: 'Diet', title: '饮食推荐' },
+  notifications: { kicker: 'Messages', title: '消息中心' },
+  'system-users': { kicker: 'System', title: '用户管理' },
+  'system-config': { kicker: 'System', title: '系统配置' },
+} as const
 
 export function MainLayout({ children }: PropsWithChildren) {
   const navigate = useNavigate()
@@ -60,36 +73,38 @@ export function MainLayout({ children }: PropsWithChildren) {
       : []),
   ]
 
+  const currentMeta = navigationMeta[selectedKey]
+
+  function handleNavigate(key: string) {
+    if (key === 'dashboard') navigate(ROUTE_PATHS.dashboard)
+    if (key === 'patients') navigate(ROUTE_PATHS.patients)
+    if (key === 'glucose') navigate(ROUTE_PATHS.glucoseOverview)
+    if (key === 'followup') navigate(ROUTE_PATHS.followupTemplates)
+    if (key === 'diet') navigate(ROUTE_PATHS.dietManage)
+    if (key === 'notifications') navigate(ROUTE_PATHS.notifications)
+    if (key === 'system-users') navigate(ROUTE_PATHS.systemUsers)
+    if (key === 'system-config') navigate(ROUTE_PATHS.systemConfig)
+  }
+
   return (
     <Layout className="app-layout">
-      <Sider width={228} className="app-sider" theme="light">
-        <div className="brand-block">
-          <Typography.Text className="brand-kicker">Diabetes Followup</Typography.Text>
-          <Typography.Title level={4} className="brand-title">
-            糖尿病随访系统
-          </Typography.Title>
-        </div>
-        <Menu
-          mode="inline"
-          selectedKeys={[selectedKey]}
-          items={items}
-          onClick={({ key }) => {
-            if (key === 'dashboard') navigate(ROUTE_PATHS.dashboard)
-            if (key === 'patients') navigate(ROUTE_PATHS.patients)
-            if (key === 'glucose') navigate(ROUTE_PATHS.glucoseOverview)
-            if (key === 'followup') navigate(ROUTE_PATHS.followupTemplates)
-            if (key === 'diet') navigate(ROUTE_PATHS.dietManage)
-            if (key === 'notifications') navigate(ROUTE_PATHS.notifications)
-            if (key === 'system-users') navigate(ROUTE_PATHS.systemUsers)
-            if (key === 'system-config') navigate(ROUTE_PATHS.systemConfig)
-          }}
-        />
-      </Sider>
       <Layout>
         <Header className="app-header">
-          <Typography.Title level={5} className="page-title">
-            糖尿病随访系统
-          </Typography.Title>
+          <div className="app-header__leading">
+            <StaggeredMenu
+              brandKicker="Diabetes Followup"
+              brandTitle="糖尿病随访系统"
+              items={items}
+              selectedKey={selectedKey}
+              onSelect={handleNavigate}
+            />
+            <div className="app-header__title-group">
+              <Typography.Text className="brand-kicker">{currentMeta.kicker}</Typography.Text>
+              <Typography.Title level={5} className="page-title app-header__title">
+                <TextType text={currentMeta.title} as="span" speed={28} />
+              </Typography.Title>
+            </div>
+          </div>
           <Space size={12}>
             <div className="user-pill">
               <Avatar size={32} icon={<UserOutlined />} />
