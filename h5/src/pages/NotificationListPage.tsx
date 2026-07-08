@@ -8,6 +8,15 @@ import {
   type H5PatientInfo,
 } from '../services/h5Service'
 
+const phoneStoragePrefix = 'h5_phone_last4:'
+
+function getStoredPhoneLast4(token: string) {
+  if (!token) {
+    return ''
+  }
+  return sessionStorage.getItem(`${phoneStoragePrefix}${token}`) ?? ''
+}
+
 function getChannelLabel(channel: string) {
   return channel === 'server_chan' ? '微信提醒' : '系统通知'
 }
@@ -47,9 +56,15 @@ export function NotificationListPage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    const phoneLast4 = getStoredPhoneLast4(token)
     if (!token) {
       setLoading(false)
       setError('缺少访问令牌，请重新打开链接。')
+      return
+    }
+    if (!phoneLast4) {
+      setLoading(false)
+      setError('请先从血糖录入页完成手机号后四位校验。')
       return
     }
 
@@ -57,8 +72,8 @@ export function NotificationListPage() {
       setError(null)
       try {
         const [patientResponse, notificationsResponse] = await Promise.all([
-          fetchPatientInfo(token),
-          fetchPatientNotifications(token),
+          fetchPatientInfo(token, phoneLast4),
+          fetchPatientNotifications(token, phoneLast4),
         ])
         setPatient(patientResponse.data)
         setItems(notificationsResponse.data ?? [])
@@ -125,9 +140,7 @@ export function NotificationListPage() {
           </button>
         ) : null}
 
-        {!loading && !items.length && !error ? (
-          <p className="h5-muted">暂无通知。</p>
-        ) : null}
+        {!loading && !items.length && !error ? <p className="h5-muted">暂无通知。</p> : null}
 
         <div className="h5-notification-list">
           {items.map((item) => (
@@ -138,16 +151,12 @@ export function NotificationListPage() {
               </div>
 
               <div className="h5-notification-meta">
-                <span className={`h5-status-badge ${getStatusClassName(item)}`}>
-                  {getStatusLabel(item)}
-                </span>
+                <span className={`h5-status-badge ${getStatusClassName(item)}`}>{getStatusLabel(item)}</span>
               </div>
 
               <p>{item.content}</p>
 
-              <small>
-                {item.fail_reason ? `失败原因：${item.fail_reason}` : `消息状态：${getStatusLabel(item)}`}
-              </small>
+              <small>{item.fail_reason ? `失败原因：${item.fail_reason}` : `消息状态：${getStatusLabel(item)}`}</small>
             </article>
           ))}
         </div>

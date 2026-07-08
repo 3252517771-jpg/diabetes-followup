@@ -13,6 +13,7 @@ class H5PatientInfo(BaseModel):
     age: int | None = None
     diagnosis_type: str | None = None
     severity: str | None = None
+    phone_masked: str | None = None
 
 
 class H5AccessLinkRead(BaseModel):

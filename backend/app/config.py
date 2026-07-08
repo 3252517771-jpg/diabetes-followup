@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     ai_model: str = "deepseek-chat"
     enable_push: bool = False
     server_chan_key: str = ""
+    h5_public_base_url: str = "http://127.0.0.1:5174"
 
     model_config = SettingsConfigDict(
         env_file=".env",

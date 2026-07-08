@@ -7,6 +7,7 @@ export interface H5PatientInfo {
   age: number | null
   diagnosis_type: string | null
   severity: string | null
+  phone_masked: string | null
 }
 
 export interface H5TaskItem {
@@ -52,37 +53,43 @@ export interface H5SubmittedGlucoseRecord {
   source: string
 }
 
-export async function fetchPatientInfo(token: string) {
-  return request<H5PatientInfo>(`/h5/api/patient/info?token=${encodeURIComponent(token)}`)
+function buildSecureQuery(token: string, phoneLast4: string) {
+  return `token=${encodeURIComponent(token)}&phone_last4=${encodeURIComponent(phoneLast4)}`
 }
 
-export async function fetchPatientTasks(token: string) {
-  return request<H5TaskItem[]>(`/h5/api/patient/tasks?token=${encodeURIComponent(token)}`)
+export async function fetchPatientInfo(token: string, phoneLast4: string) {
+  return request<H5PatientInfo>(`/h5/api/patient/info?${buildSecureQuery(token, phoneLast4)}`)
 }
 
-export async function fetchPatientNotifications(token: string) {
-  return request<H5NotificationItem[]>(`/h5/api/patient/notifications?token=${encodeURIComponent(token)}`)
+export async function fetchPatientTasks(token: string, phoneLast4: string) {
+  return request<H5TaskItem[]>(`/h5/api/patient/tasks?${buildSecureQuery(token, phoneLast4)}`)
 }
 
-export async function submitPatientGlucose(token: string, payload: H5GlucosePayload) {
+export async function fetchPatientNotifications(token: string, phoneLast4: string) {
+  return request<H5NotificationItem[]>(`/h5/api/patient/notifications?${buildSecureQuery(token, phoneLast4)}`)
+}
+
+export async function submitPatientGlucose(token: string, phoneLast4: string, payload: H5GlucosePayload) {
   return request<H5SubmittedGlucoseRecord>('/h5/api/patient/glucose', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'X-H5-Token': token,
+      'X-H5-Phone-Last4': phoneLast4,
     },
     body: JSON.stringify(payload),
   })
 }
 
-export async function fetchRecentPatientGlucose(token: string, limit = 5) {
+export async function fetchRecentPatientGlucose(token: string, phoneLast4: string, limit = 5) {
   return request<H5RecentGlucoseRecord[]>(
-    `/h5/api/patient/glucose/recent?token=${encodeURIComponent(token)}&limit=${limit}`,
+    `/h5/api/patient/glucose/recent?${buildSecureQuery(token, phoneLast4)}&limit=${limit}`,
   )
 }
 
 export async function updatePatientGlucose(
   token: string,
+  phoneLast4: string,
   recordId: number,
   payload: H5GlucosePayload,
 ) {
@@ -91,6 +98,7 @@ export async function updatePatientGlucose(
     headers: {
       'Content-Type': 'application/json',
       'X-H5-Token': token,
+      'X-H5-Phone-Last4': phoneLast4,
     },
     body: JSON.stringify(payload),
   })

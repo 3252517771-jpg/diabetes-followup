@@ -108,7 +108,7 @@ async def test_auto_reminder_respects_patient_switch(client, monkeypatch):
     assert summary["followup_sent"] >= 1
 
     enabled_notifications = await client.get(
-        f"/api/h5/api/patient/notifications?token={((await client.get(f'/api/patients/{enabled_patient_id}/h5-access', headers=doctor_headers)).json()['data']['access_token'])}"
+        f"/api/h5/api/patient/notifications?token={((await client.get(f'/api/patients/{enabled_patient_id}/h5-access', headers=doctor_headers)).json()['data']['access_token'])}&phone_last4=0001"
     )
     assert enabled_notifications.status_code == 200
     enabled_items = enabled_notifications.json()["data"]
@@ -116,7 +116,7 @@ async def test_auto_reminder_respects_patient_switch(client, monkeypatch):
     assert any('"notification_type": "followup_task_reminder"' in item["content"] for item in enabled_items)
 
     disabled_notifications = await client.get(
-        f"/api/h5/api/patient/notifications?token={((await client.get(f'/api/patients/{disabled_patient_id}/h5-access', headers=doctor_headers)).json()['data']['access_token'])}"
+        f"/api/h5/api/patient/notifications?token={((await client.get(f'/api/patients/{disabled_patient_id}/h5-access', headers=doctor_headers)).json()['data']['access_token'])}&phone_last4=0002"
     )
     assert disabled_notifications.status_code == 200
     assert disabled_notifications.json()["data"] == []

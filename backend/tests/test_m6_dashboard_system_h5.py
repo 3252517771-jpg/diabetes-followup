@@ -50,12 +50,13 @@ async def test_dashboard_system_and_h5_flow(client):
     access_response = await client.get(f"/api/patients/{patient_id}/h5-access", headers=doctor_headers)
     assert access_response.status_code == 200
     h5_token = access_response.json()["data"]["access_token"]
+    phone_last4 = "0000"
 
-    patient_info_response = await client.get(f"/api/h5/api/patient/info?token={h5_token}")
+    patient_info_response = await client.get(f"/api/h5/api/patient/info?token={h5_token}&phone_last4={phone_last4}")
     assert patient_info_response.status_code == 200
     assert patient_info_response.json()["data"]["name"] == "H5 Patient"
 
-    tasks_response = await client.get(f"/api/h5/api/patient/tasks?token={h5_token}")
+    tasks_response = await client.get(f"/api/h5/api/patient/tasks?token={h5_token}&phone_last4={phone_last4}")
     assert tasks_response.status_code == 200
     assert tasks_response.json()["data"][0]["key"] == "glucose"
 
@@ -67,13 +68,15 @@ async def test_dashboard_system_and_h5_flow(client):
             "category": "fasting",
             "notes": "h5 submit",
         },
-        headers={"X-H5-Token": h5_token},
+        headers={"X-H5-Token": h5_token, "X-H5-Phone-Last4": phone_last4},
     )
     assert glucose_response.status_code == 201
     assert glucose_response.json()["data"]["source"] == "patient"
     record_id = glucose_response.json()["data"]["id"]
 
-    recent_response = await client.get(f"/api/h5/api/patient/glucose/recent?token={h5_token}&limit=5")
+    recent_response = await client.get(
+        f"/api/h5/api/patient/glucose/recent?token={h5_token}&phone_last4={phone_last4}&limit=5"
+    )
     assert recent_response.status_code == 200
     assert recent_response.json()["data"][0]["id"] == record_id
     assert recent_response.json()["data"][0]["editable"] is True
@@ -86,7 +89,7 @@ async def test_dashboard_system_and_h5_flow(client):
             "category": "postprandial",
             "notes": "edited by h5",
         },
-        headers={"X-H5-Token": h5_token},
+        headers={"X-H5-Token": h5_token, "X-H5-Phone-Last4": phone_last4},
     )
     assert update_response.status_code == 200
     assert update_response.json()["data"]["category"] == "postprandial"

@@ -34,35 +34,47 @@ async def create_h5_access_link(
 @router.get("/h5/api/patient/info", response_model=ApiResponse[H5PatientInfo])
 async def get_h5_patient_info(
     token: str = Query(...),
+    phone_last4: str = Query(..., min_length=4, max_length=4),
     service: H5Service = Depends(get_h5_service),
 ) -> ApiResponse[H5PatientInfo]:
-    return ApiResponse(code=200, message="ok", data=await service.get_patient_info(token))
+    return ApiResponse(code=200, message="ok", data=await service.get_patient_info(token, phone_last4))
 
 
 @router.get("/h5/api/patient/tasks", response_model=ApiResponse[list[H5TaskItem]])
 async def get_h5_patient_tasks(
     token: str = Query(...),
+    phone_last4: str = Query(..., min_length=4, max_length=4),
     service: H5Service = Depends(get_h5_service),
 ) -> ApiResponse[list[H5TaskItem]]:
-    return ApiResponse(code=200, message="ok", data=await service.get_tasks(token))
+    return ApiResponse(code=200, message="ok", data=await service.get_tasks(token, phone_last4))
 
 
 @router.post("/h5/api/patient/glucose", response_model=ApiResponse[BloodGlucoseRecordRead], status_code=status.HTTP_201_CREATED)
 async def create_h5_glucose_record(
     payload: H5GlucoseCreate,
     x_h5_token: str = Header(..., alias="X-H5-Token"),
+    x_h5_phone_last4: str = Header(..., alias="X-H5-Phone-Last4"),
     service: H5Service = Depends(get_h5_service),
 ) -> ApiResponse[BloodGlucoseRecordRead]:
-    return ApiResponse(code=201, message="created", data=await service.create_glucose_record(x_h5_token, payload))
+    return ApiResponse(
+        code=201,
+        message="created",
+        data=await service.create_glucose_record(x_h5_token, x_h5_phone_last4, payload),
+    )
 
 
 @router.get("/h5/api/patient/glucose/recent", response_model=ApiResponse[list[H5RecentGlucoseRecordRead]])
 async def list_h5_recent_glucose_records(
     token: str = Query(...),
+    phone_last4: str = Query(..., min_length=4, max_length=4),
     limit: int = Query(default=5, ge=1, le=20),
     service: H5Service = Depends(get_h5_service),
 ) -> ApiResponse[list[H5RecentGlucoseRecordRead]]:
-    return ApiResponse(code=200, message="ok", data=await service.list_recent_glucose_records(token, limit=limit))
+    return ApiResponse(
+        code=200,
+        message="ok",
+        data=await service.list_recent_glucose_records(token, phone_last4, limit=limit),
+    )
 
 
 @router.put("/h5/api/patient/glucose/{record_id}", response_model=ApiResponse[BloodGlucoseRecordRead])
@@ -70,14 +82,20 @@ async def update_h5_glucose_record(
     record_id: int,
     payload: H5GlucoseUpdate,
     x_h5_token: str = Header(..., alias="X-H5-Token"),
+    x_h5_phone_last4: str = Header(..., alias="X-H5-Phone-Last4"),
     service: H5Service = Depends(get_h5_service),
 ) -> ApiResponse[BloodGlucoseRecordRead]:
-    return ApiResponse(code=200, message="ok", data=await service.update_glucose_record(x_h5_token, record_id, payload))
+    return ApiResponse(
+        code=200,
+        message="ok",
+        data=await service.update_glucose_record(x_h5_token, x_h5_phone_last4, record_id, payload),
+    )
 
 
 @router.get("/h5/api/patient/notifications", response_model=ApiResponse[list[dict]])
 async def get_h5_notifications(
     token: str = Query(...),
+    phone_last4: str = Query(..., min_length=4, max_length=4),
     service: H5Service = Depends(get_h5_service),
 ) -> ApiResponse[list[dict]]:
-    return ApiResponse(code=200, message="ok", data=await service.list_notifications(token))
+    return ApiResponse(code=200, message="ok", data=await service.list_notifications(token, phone_last4))
